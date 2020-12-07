@@ -12,6 +12,7 @@ type UserController struct {
 	userService *services.UserService
 }
 
+// NewUserController - UserController constructor function
 func NewUserController() *UserController {
 	return &UserController{
 		userService: services.NewUserService(),

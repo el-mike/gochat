@@ -12,6 +12,8 @@ import (
 )
 
 func main() {
+	debugDbHost := os.Getenv("POSTGRES_HOST")
+
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -19,8 +21,13 @@ func main() {
 	pgUser := os.Getenv("POSTGRES_USER")
 	pgPassword := os.Getenv("POSTGRES_PASSWORD")
 	pgDBname := os.Getenv("POSTGRES_DB")
-	pgHost := os.Getenv("POSTGRES_HOST")
 	pgPort := os.Getenv("POSTGRES_PORT")
+
+	pgHost := debugDbHost
+
+	if pgHost == "" {
+		pgHost = os.Getenv("POSTGRES_HOST")
+	}
 
 	_, err := persist.InitDatabase(pgUser, pgPassword, pgDBname, pgHost, pgPort)
 
