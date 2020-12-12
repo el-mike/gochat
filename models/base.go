@@ -7,8 +7,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// Base type for all entities
-type Base struct {
+// BaseModel is a base type for all entities, containing basic fields
+type BaseModel struct {
 	ID        uuid.UUID  `gorm:"type:uuid;primary_key" json:"id"`
 	CreatedAt time.Time  `json:"createdAt"`
 	UpdatedAt time.Time  `json:"updatedAt"`
@@ -16,7 +16,7 @@ type Base struct {
 }
 
 // BeforeCreate - GORM hook
-func (base *Base) BeforeCreate(tx *gorm.DB) (err error) {
+func (base *BaseModel) BeforeCreate(tx *gorm.DB) (err error) {
 	base.ID = uuid.New()
 
 	return nil

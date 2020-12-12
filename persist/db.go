@@ -42,7 +42,7 @@ func AutoMigrate() error {
 	}
 
 	err := DB.AutoMigrate(
-		&models.User{},
+		&models.UserModel{},
 	)
 
 	if err != nil {

@@ -5,9 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func DefineUserRoutes(router *gin.Engine) {
+func DefineUserRoutes(router *gin.RouterGroup) {
 	userController := controllers.NewUserController()
 
-	router.GET("/users", userController.GetUsers)
-	router.POST("/users", userController.SaveUser)
+	router.GET("/", userController.GetUsers)
+	router.POST("/", userController.SaveUser)
 }

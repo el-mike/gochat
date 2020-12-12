@@ -6,13 +6,16 @@ import "github.com/gin-gonic/gin"
 func InitRouting() {
 	router := gin.Default()
 
-	router.GET("/health", func(c *gin.Context) {
+	v1 := router.Group("/api")
+
+	v1.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "works",
+			"message": "healthy",
 		})
 	})
 
-	DefineUserRoutes(router)
+	DefineAuthRoutes(v1.Group("/auth"))
+	DefineUserRoutes(v1.Group("/users"))
 
 	router.Run()
 }
