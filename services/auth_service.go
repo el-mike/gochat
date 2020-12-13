@@ -1,10 +1,10 @@
 package services
 
 import (
+	"github.com/el-Mike/gochat/auth"
 	"github.com/el-Mike/gochat/models"
 	"github.com/el-Mike/gochat/persist"
 	"github.com/el-Mike/gochat/schema"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -12,6 +12,7 @@ import (
 type AuthService struct {
 	broker      *gorm.DB
 	userService *UserService
+	authManager *auth.AuthManager
 }
 
 // NewAuthService - AuthService constructor func.
@@ -19,12 +20,18 @@ func NewAuthService() *AuthService {
 	return &AuthService{
 		broker:      persist.DB,
 		userService: NewUserService(),
+		authManager: auth.NewAuthManager(),
 	}
+}
+
+// Login - logs in a user.
+func (as *AuthService) Login(credentials schema.LoginCredentials) (*auth.Claims, error) {
+
 }
 
 // SignUp - registers a new user, and saves it to DB.
 func (as *AuthService) SignUp(credentials schema.SignupPayload) (*models.UserModel, error) {
-	hashedPassword, err := hashAndSalt([]byte(credentials.Password))
+	hashedPassword, err := as.authManager.HashAndSalt([]byte(credentials.Password))
 
 	if err != nil {
 		return nil, err
@@ -44,26 +51,4 @@ func (as *AuthService) SignUp(credentials schema.SignupPayload) (*models.UserMod
 	}
 
 	return userModel, nil
-}
-
-func comparePasswords(hashedPassword string, plainPassword []byte) error {
-	byteHash := []byte(hashedPassword)
-
-	err := bcrypt.CompareHashAndPassword(byteHash, plainPassword)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func hashAndSalt(password []byte) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword(password, bcrypt.MinCost)
-
-	if err != nil {
-		return "", err
-	}
-
-	return string(hash), nil
 }

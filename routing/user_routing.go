@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// DefineUserRoutes - registers user routes.
 func DefineUserRoutes(router *gin.RouterGroup) {
 	userController := controllers.NewUserController()
 
