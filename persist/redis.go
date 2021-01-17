@@ -6,23 +6,24 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-var redisClient *redis.Client
+// RedisClient - stores the connection to Redis server.
+var RedisClient *redis.Client
 
 // InitRedisClient - initializes Redis storage driver.
 func InitRedisClient(host, port, password string) *redis.Client {
-	if redisClient != nil {
-		return redisClient
+	if RedisClient != nil {
+		return RedisClient
 	}
 
 	addr := fmt.Sprintf("%s:%s", host, port)
 
 	conn := redis.NewClient(&redis.Options{
 		Addr:     addr,
-		Password: password,
+		Password: "",
 		DB:       0,
 	})
 
-	redisClient = conn
+	RedisClient = conn
 
-	return redisClient
+	return RedisClient
 }

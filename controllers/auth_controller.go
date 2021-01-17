@@ -53,6 +53,26 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 		return
 	}
 
+	token, err := ac.authService.Login(userModel)
+
+	if err != nil {
+		ctx.JSON(http.StatusForbidden, "Please try again later")
+
+		return
+	}
+
+	loginResponse := &schema.LoginResponse{}
+	err = loginResponse.FromModel(userModel)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, api.FromError(err))
+
+		return
+	}
+
+	loginResponse.Token = token
+
+	ctx.JSON(http.StatusOK, loginResponse)
 }
 
 // SignUp - registers a new user
@@ -86,7 +106,6 @@ func (ac *AuthController) SignUp(ctx *gin.Context) {
 	}
 
 	userResponse := &schema.UserResponse{}
-
 	err = userResponse.FromModel(userModel)
 
 	if err != nil {

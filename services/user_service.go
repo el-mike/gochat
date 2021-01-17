@@ -19,10 +19,10 @@ func NewUserService() *UserService {
 }
 
 // GetUserByEmail - returns single User with given email.
-func (us *UserService) GetUserByEmail(email string) (models.UserModel, error) {
-	var model models.UserModel
+func (us *UserService) GetUserByEmail(email string) (*models.UserModel, error) {
+	model := &models.UserModel{}
 
-	err := us.broker.Where(&models.UserModel{Email: email}).First(&model).Error
+	err := us.broker.Where(&models.UserModel{Email: email}).First(model).Error
 
 	return model, err
 }

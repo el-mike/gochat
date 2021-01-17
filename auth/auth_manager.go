@@ -1,17 +1,8 @@
 package auth
 
 import (
-	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )
-
-// Claims - JWT Claims for user authentication.
-type Claims struct {
-	jwt.StandardClaims
-	Email    string `json:"email"`
-	UserID   string `json:"userId"`
-	AuthUUID string
-}
 
 // AuthManager - manages auth related operations.
 type AuthManager struct{}
