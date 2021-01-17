@@ -5,9 +5,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Claims - JWT Claims for user authentication.
 type Claims struct {
 	jwt.StandardClaims
-	email string `json:"email"`
+	Email    string `json:"email"`
+	UserID   string `json:"userId"`
+	AuthUUID string
 }
 
 // AuthManager - manages auth related operations.

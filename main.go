@@ -12,6 +12,8 @@ import (
 )
 
 func main() {
+	// When app is run in debug mode, we want to use postgres host defined
+	// in task's configuration, as debug mode is run outside of docker-compose network.
 	debugDbHost := os.Getenv("POSTGRES_HOST")
 
 	if err := godotenv.Load(); err != nil {
@@ -29,7 +31,12 @@ func main() {
 		pgHost = os.Getenv("POSTGRES_HOST")
 	}
 
+	redisHost := os.Getenv("REDIS_HOST")
+	redisPort := os.Getenv("REDIS_PORT")
+	redisPassword := os.Getenv("REDIS_PASSWORD")
+
 	_, err := persist.InitDatabase(pgUser, pgPassword, pgDBname, pgHost, pgPort)
+	_ = persist.InitRedisClient(redisHost, redisPort, redisPassword)
 
 	if err != nil {
 		log.Fatal("Database connection failed")

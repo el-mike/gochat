@@ -25,9 +25,9 @@ func NewAuthService() *AuthService {
 }
 
 // Login - logs in a user.
-func (as *AuthService) Login(credentials schema.LoginCredentials) (*auth.Claims, error) {
+// func (as *AuthService) Login(credentials schema.LoginCredentials) (string, error) {
 
-}
+// }
 
 // SignUp - registers a new user, and saves it to DB.
 func (as *AuthService) SignUp(credentials schema.SignupPayload) (*models.UserModel, error) {

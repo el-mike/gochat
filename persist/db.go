@@ -10,10 +10,10 @@ import (
 	"gorm.io/gorm"
 )
 
-// DB - singleton variable for storing DB connection
+// DB - singleton variable for storing DB connection.
 var DB *gorm.DB
 
-// Init initializes database driver
+// InitDatabase - initializes database driver.
 func InitDatabase(username, password, dbname, host, port string) (*gorm.DB, error) {
 	if DB != nil {
 		return DB, nil
@@ -35,7 +35,7 @@ func InitDatabase(username, password, dbname, host, port string) (*gorm.DB, erro
 	return DB, nil
 }
 
-// AutoMigrate - fires the migrations for DB schemas
+// AutoMigrate - fires the migrations for DB schemas.
 func AutoMigrate() error {
 	if DB == nil {
 		return errors.New("Database has not been initialized")
