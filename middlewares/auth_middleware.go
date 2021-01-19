@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"errors"
 	"net/http"
 	"os"
 
@@ -34,7 +33,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		claims, ok := token.Claims.(jwt.MapClaims)
 
 		if !ok || !token.Valid {
-			ctx.JSON(http.StatusUnauthorized, api.FromError(errors.New("Please log in again")))
+			ctx.JSON(http.StatusUnauthorized, api.NewAPIError(401, "Please log in again"))
 			ctx.Abort()
 
 			return
@@ -44,7 +43,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		userID, userIDErr := uuid.Parse(claims["userID"].(string))
 
 		if authUUIDErr != nil || userIDErr != nil {
-			ctx.JSON(http.StatusUnauthorized, api.FromError(errors.New("Token malformed")))
+			ctx.JSON(http.StatusUnauthorized, api.NewAPIError(401, "Token malformed"))
 			ctx.Abort()
 
 			return
