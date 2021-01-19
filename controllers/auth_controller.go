@@ -27,7 +27,7 @@ func NewAuthController() *AuthController {
 	}
 }
 
-// Login - authorizes given user and returns a token.
+// Login - authenticates given user and returns a token.
 func (ac *AuthController) Login(ctx *gin.Context) {
 	var credentials schema.LoginCredentials
 

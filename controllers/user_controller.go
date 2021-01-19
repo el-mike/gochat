@@ -22,8 +22,37 @@ func NewUserController() *UserController {
 	}
 }
 
+// GetMe - returns user logged in with token sent in request.
+func (uc *UserController) GetMe(ctx *gin.Context) {
+	contextUser, ok := ctx.Get(api.ContextUserKey)
+
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, api.NewAPIError(500, "User data malformed"))
+
+		return
+	}
+
+	id := contextUser.(*api.ContextUser).ID
+
+	userModel, err := uc.userService.GetUserByID(id)
+
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, api.NewAPIError(400, "User not found"))
+
+		return
+	}
+
+	userResponse := schema.UserResponse{}
+
+	userResponse.FromModel(userModel)
+
+	ctx.JSON(http.StatusOK, userResponse)
+}
+
 // GetUser - returns single User based on it's ID.
-func (uc *UserController) GetUser(ctx *gin.Context) {}
+// func (uc *UserController) GetUser(ctx *gin.Context) {
+
+// }
 
 // GetUsers - returns all the users
 func (uc *UserController) GetUsers(ctx *gin.Context) {

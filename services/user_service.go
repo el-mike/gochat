@@ -3,6 +3,7 @@ package services
 import (
 	"github.com/el-Mike/gochat/models"
 	"github.com/el-Mike/gochat/persist"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -16,6 +17,15 @@ func NewUserService() *UserService {
 	return &UserService{
 		broker: persist.DB,
 	}
+}
+
+// GetUserByID = returns single User with given ID.
+func (us *UserService) GetUserByID(id uuid.UUID) (*models.UserModel, error) {
+	model := &models.UserModel{}
+
+	err := us.broker.First(&model, id).Error
+
+	return model, err
 }
 
 // GetUserByEmail - returns single User with given email.
