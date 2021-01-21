@@ -24,15 +24,9 @@ func NewUserController() *UserController {
 
 // GetMe - returns user logged in with token sent in request.
 func (uc *UserController) GetMe(ctx *gin.Context) {
-	contextUser, ok := ctx.Get(api.ContextUserKey)
+	contextUser := ctx.MustGet(api.ContextUserKey).(*api.ContextUser)
 
-	if !ok {
-		ctx.JSON(http.StatusInternalServerError, api.NewAPIError(500, "User data malformed"))
-
-		return
-	}
-
-	id := contextUser.(*api.ContextUser).ID
+	id := contextUser.ID
 
 	userModel, err := uc.userService.GetUserByID(id)
 
