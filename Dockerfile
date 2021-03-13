@@ -1,4 +1,5 @@
-FROM golang:1.14-alpine
+# build stage
+FROM golang:1.14-alpine AS builder
 
 RUN apk update && apk upgrade && \
     apk add --no-cache bash git openssh
@@ -15,8 +16,14 @@ COPY . .
 
 RUN go build -o main .
 
-EXPOSE 8080
+# final stage
+FROM alpine
 
+WORKDIR /app
+
+COPY --from=builder /app .
+
+EXPOSE 8080
 RUN chmod a+x ./main
 
 CMD ["./main"]
