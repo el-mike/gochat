@@ -1,5 +1,5 @@
 # gochat
-https://img.shields.io/github/workflow/status/el-Mike/gochat/Gochat%20API
+![build](https://img.shields.io/github/workflow/status/el-Mike/gochat/Gochat%20API)
 
 Gochat is a simple chatting application, created for learning purposes. 
 
