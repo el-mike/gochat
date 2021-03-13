@@ -1,4 +1,4 @@
-name: Go
+name: Gochat API
 
 on:
   push:
