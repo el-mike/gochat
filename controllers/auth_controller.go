@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/el-Mike/gochat/auth"
@@ -32,7 +33,7 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 	var credentials schema.LoginCredentials
 
 	if err := ctx.ShouldBindJSON(&credentials); err != nil {
-		ctx.JSON(http.StatusUnprocessableEntity, api.FromError(err))
+		ctx.JSON(api.ResponseFromError(api.NewBadRequestError(err)))
 
 		return
 	}
@@ -40,7 +41,7 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 	userModel, err := ac.userService.GetUserByEmail(credentials.Email)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, api.NewAPIError(400, "Email or password is incorrect"))
+		ctx.JSON(api.ResponseFromError(api.NewLoginCredentialsIncorrectError()))
 
 		return
 	}
@@ -48,7 +49,7 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 	err = ac.authManager.ComparePasswords(userModel.Password, []byte(credentials.Password))
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, api.NewAPIError(400, "Email or password is incorrect"))
+		ctx.JSON(api.ResponseFromError(api.NewLoginCredentialsIncorrectError()))
 
 		return
 	}
@@ -56,7 +57,7 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 	token, err := ac.authService.Login(userModel)
 
 	if err != nil {
-		ctx.JSON(http.StatusForbidden, "Please try again later")
+		ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
 
 		return
 	}
@@ -65,7 +66,7 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 	err = loginResponse.FromModel(userModel)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, api.FromError(err))
+		ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
 
 		return
 	}
@@ -80,19 +81,19 @@ func (ac *AuthController) SignUp(ctx *gin.Context) {
 	var credentials schema.SignupPayload
 
 	if err := ctx.ShouldBindJSON(&credentials); err != nil {
-		ctx.JSON(http.StatusUnprocessableEntity, api.FromError(err))
+		ctx.JSON(api.ResponseFromError(api.NewBadRequestError(err)))
 
 		return
 	}
 
 	if _, err := ac.userService.GetUserByEmail(credentials.Email); err == nil {
-		ctx.JSON(http.StatusBadRequest, api.NewAPIError(400, "User already exists"))
+		ctx.JSON(api.ResponseFromError(api.NewBadRequestError(errors.New("User already exists."))))
 
 		return
 	}
 
 	if schema.ValidatePasswordConfirmation(&credentials) == false {
-		ctx.JSON(http.StatusBadRequest, api.NewAPIError(400, "Passwords don't match"))
+		ctx.JSON(api.ResponseFromError(api.NewBadRequestError(errors.New("Passwords don't match."))))
 
 		return
 	}
@@ -100,7 +101,7 @@ func (ac *AuthController) SignUp(ctx *gin.Context) {
 	userModel, err := ac.authService.SignUp(credentials)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, api.FromError(err))
+		ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
 
 		return
 	}
@@ -109,7 +110,7 @@ func (ac *AuthController) SignUp(ctx *gin.Context) {
 	err = userResponse.FromModel(userModel)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, api.FromError(err))
+		ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
 
 		return
 	}

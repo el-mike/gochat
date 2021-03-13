@@ -15,7 +15,7 @@ type UserController struct {
 	userService *services.UserService
 }
 
-// NewUserController - UserController constructor function
+// NewUserController - UserController constructor function.
 func NewUserController() *UserController {
 	return &UserController{
 		userService: services.NewUserService(),
@@ -31,7 +31,7 @@ func (uc *UserController) GetMe(ctx *gin.Context) {
 	userModel, err := uc.userService.GetUserByID(id)
 
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, api.NewAPIError(400, "User not found"))
+		ctx.JSON(api.ResponseFromError(api.NewNotFoundError(models.USER_MODEL_NAME)))
 
 		return
 	}
@@ -43,17 +43,12 @@ func (uc *UserController) GetMe(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, userResponse)
 }
 
-// GetUser - returns single User based on it's ID.
-// func (uc *UserController) GetUser(ctx *gin.Context) {
-
-// }
-
-// GetUsers - returns all the users
+// GetUsers - returns all the users.
 func (uc *UserController) GetUsers(ctx *gin.Context) {
 	var users []models.UserModel
 
 	if err := uc.userService.GetUsers(&users); err != nil {
-		ctx.JSON(http.StatusBadRequest, api.FromError(err))
+		ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
 
 		return
 	}
@@ -76,13 +71,13 @@ func (uc *UserController) SaveUser(ctx *gin.Context) {
 	var user models.UserModel
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		ctx.JSON(http.StatusBadRequest, api.FromError(err))
+		ctx.JSON(api.ResponseFromError(api.NewBadRequestError(err)))
 
 		return
 	}
 
 	if err := uc.userService.SaveUser(&user); err != nil {
-		ctx.JSON(http.StatusBadRequest, api.FromError(err))
+		ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
 
 		return
 	}
