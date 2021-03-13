@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"net/http"
 	"os"
 
 	"github.com/google/uuid"
@@ -18,13 +17,11 @@ func AuthMiddleware() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		request := ctx.Request
-
 		apiSecret := os.Getenv("API_SECRET")
-
 		token, err := authManager.VerifyToken(request, apiSecret)
 
 		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, api.FromError(err))
+			ctx.JSON(api.ResponseFromError(api.NewAuthorizationError(err)))
 			ctx.Abort()
 
 			return
@@ -33,7 +30,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		claims, ok := token.Claims.(jwt.MapClaims)
 
 		if !ok || !token.Valid {
-			ctx.JSON(http.StatusUnauthorized, api.NewAPIError(401, "Please log in again"))
+			ctx.JSON(api.ResponseFromError(api.NewTokenExpiredError()))
 			ctx.Abort()
 
 			return
@@ -43,7 +40,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		userID, userIDErr := uuid.Parse(claims["userID"].(string))
 
 		if authUUIDErr != nil || userIDErr != nil {
-			ctx.JSON(http.StatusUnauthorized, api.NewAPIError(401, "Token malformed"))
+			ctx.JSON(api.ResponseFromError(api.NewTokenMalforedError()))
 			ctx.Abort()
 
 			return
