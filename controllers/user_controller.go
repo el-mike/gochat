@@ -38,7 +38,11 @@ func (uc *UserController) GetMe(ctx *gin.Context) {
 
 	userResponse := schema.UserResponse{}
 
-	userResponse.FromModel(userModel)
+	if err := userResponse.FromModel(userModel); err != nil {
+		ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
+
+		return
+	}
 
 	ctx.JSON(http.StatusOK, userResponse)
 }
@@ -58,7 +62,11 @@ func (uc *UserController) GetUsers(ctx *gin.Context) {
 	for _, userModel := range users {
 		userResponse := schema.UserResponse{}
 
-		userResponse.FromModel(userModel)
+		if err := userResponse.FromModel(userModel); err != nil {
+			ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
+
+			return
+		}
 
 		userResponses = append(userResponses, userResponse)
 	}

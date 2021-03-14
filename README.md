@@ -31,3 +31,10 @@ API_SECRET=
 ## Debugging
 
 There is VSC launch configuration available in the repository. In order to run Gochat API using VSC debugging, run `docker-compose up postgres redis` or `./scripts/run_deps.sh`, and then start `[Gochat] Launch API` VSC configuration. 
+
+# Development
+
+## Prerequisites
+
+1. Install [golangci-lint](https://golangci-lint.run/usage/install/)
+2. Set your IDE to use golangci-lint ([instructions](https://golangci-lint.run/usage/integrations/))
