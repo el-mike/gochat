@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/el-Mike/gochat/auth"
+	"github.com/el-Mike/gochat/common/api"
 	"github.com/el-Mike/gochat/models"
 	"github.com/el-Mike/gochat/persist"
 	"github.com/el-Mike/gochat/schema"
@@ -40,6 +41,11 @@ func (as *AuthService) Login(user *models.UserModel) (string, error) {
 	}
 
 	return token, nil
+}
+
+// Logout - logs out a user.
+func (as *AuthService) Logout(userContext *api.ContextUser) error {
+	return as.authManager.Logout(userContext)
 }
 
 // SignUp - registers a new user, and saves it to DB.

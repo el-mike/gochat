@@ -8,12 +8,14 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/el-Mike/gochat/auth"
 	"github.com/el-Mike/gochat/common/api"
+	"github.com/el-Mike/gochat/persist"
 	"github.com/gin-gonic/gin"
 )
 
 // AuthMiddleware - middleware for authenticating and authorizing the user.
 func AuthMiddleware() gin.HandlerFunc {
 	authManager := auth.NewAuthManager()
+	redis := persist.RedisClient
 
 	return func(ctx *gin.Context) {
 		request := ctx.Request
@@ -45,6 +47,17 @@ func AuthMiddleware() gin.HandlerFunc {
 
 			return
 		}
+
+		// If there is no authorization entry is Redis store, it means that
+		// user logged out from the application - therefore token expired,
+		// even if it's still valid time-wise.
+		if err := redis.Get(ctx, authUUID.String()).Err(); err != nil {
+			ctx.JSON(api.ResponseFromError(api.NewTokenExpiredError()))
+			ctx.Abort()
+
+			return
+		}
+
 		email := claims["email"].(string)
 
 		currentUser := &api.ContextUser{
