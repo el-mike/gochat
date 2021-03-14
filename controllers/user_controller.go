@@ -45,9 +45,9 @@ func (uc *UserController) GetMe(ctx *gin.Context) {
 
 // GetUsers - returns all the users.
 func (uc *UserController) GetUsers(ctx *gin.Context) {
-	var users []models.UserModel
+	users, err := uc.userService.GetUsers()
 
-	if err := uc.userService.GetUsers(&users); err != nil {
+	if err != nil {
 		ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
 
 		return
@@ -58,7 +58,7 @@ func (uc *UserController) GetUsers(ctx *gin.Context) {
 	for _, userModel := range users {
 		userResponse := schema.UserResponse{}
 
-		userResponse.FromModel(&userModel)
+		userResponse.FromModel(userModel)
 
 		userResponses = append(userResponses, userResponse)
 	}
