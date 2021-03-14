@@ -1,0 +1,7 @@
+{
+    "go.lintTool": "golangci-lint",
+    "go.lintFlags": [
+        "--fast"
+    ],
+    "python.pythonPath": "/usr/local/bin/python3"
+}

@@ -92,7 +92,7 @@ func (ac *AuthController) SignUp(ctx *gin.Context) {
 		return
 	}
 
-	if schema.ValidatePasswordConfirmation(&credentials) == false {
+	if !schema.ValidatePasswordConfirmation(&credentials) {
 		ctx.JSON(api.ResponseFromError(api.NewBadRequestError(errors.New("Passwords don't match."))))
 
 		return
