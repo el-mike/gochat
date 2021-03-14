@@ -2,6 +2,7 @@ package routing
 
 import (
 	"github.com/el-Mike/gochat/controllers"
+	"github.com/el-Mike/gochat/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,4 +12,6 @@ func DefineAuthRoutes(router *gin.RouterGroup) {
 
 	router.POST("/signup", authController.SignUp)
 	router.POST("/login", authController.Login)
+
+	router.POST("/logout", middlewares.AuthMiddleware(), authController.Logout)
 }

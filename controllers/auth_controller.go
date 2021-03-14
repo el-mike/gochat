@@ -76,6 +76,19 @@ func (ac *AuthController) Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, loginResponse)
 }
 
+// Logout - logs out a user.
+func (ac *AuthController) Logout(ctx *gin.Context) {
+	contextUser := ctx.MustGet(api.ContextUserKey).(*api.ContextUser)
+
+	if err := ac.authService.Logout(contextUser); err != nil {
+		ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
+
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"status": "OK"})
+}
+
 // SignUp - registers a new user
 func (ac *AuthController) SignUp(ctx *gin.Context) {
 	var credentials schema.SignupPayload
