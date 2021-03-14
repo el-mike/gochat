@@ -38,8 +38,12 @@ func (us *UserService) GetUserByEmail(email string) (*models.UserModel, error) {
 }
 
 // GetUsers - returns collection of users from DB.
-func (us *UserService) GetUsers(users *[]models.UserModel) error {
-	return us.broker.Find(users).Error
+func (us *UserService) GetUsers() ([]*models.UserModel, error) {
+	var users []*models.UserModel
+
+	err := us.broker.Find(&users).Error
+
+	return users, err
 }
 
 // SaveUser - save single user to DB.
