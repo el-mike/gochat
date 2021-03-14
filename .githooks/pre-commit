@@ -1,4 +1,3 @@
 #!/usr/bin/env sh
-# exec golangci-lint run "$@"
 
-exit 1
+exec golangci-lint run "$@"
