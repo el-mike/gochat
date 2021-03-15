@@ -1,9 +1,8 @@
 package controllers
 
 import (
-	"net/http"
-
 	"github.com/el-Mike/gochat/common/api"
+	"github.com/el-Mike/gochat/common/control"
 	"github.com/el-Mike/gochat/models"
 	"github.com/el-Mike/gochat/schema"
 	"github.com/el-Mike/gochat/services"
@@ -23,38 +22,30 @@ func NewUserController() *UserController {
 }
 
 // GetMe - returns user logged in with token sent in request.
-func (uc *UserController) GetMe(ctx *gin.Context) {
-	contextUser := ctx.MustGet(api.ContextUserKey).(*api.ContextUser)
-
+func (uc *UserController) GetMe(ctx *gin.Context, contextUser *control.ContextUser) (interface{}, *api.APIError) {
 	id := contextUser.ID
 
 	userModel, err := uc.userService.GetUserByID(id)
 
 	if err != nil {
-		ctx.JSON(api.ResponseFromError(api.NewNotFoundError(models.USER_MODEL_NAME)))
-
-		return
+		return nil, api.NewNotFoundError(models.USER_MODEL_NAME)
 	}
 
 	userResponse := schema.UserResponse{}
 
 	if err := userResponse.FromModel(userModel); err != nil {
-		ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
-
-		return
+		return nil, api.NewInternalError(err)
 	}
 
-	ctx.JSON(http.StatusOK, userResponse)
+	return userResponse, nil
 }
 
 // GetUsers - returns all the users.
-func (uc *UserController) GetUsers(ctx *gin.Context) {
+func (uc *UserController) GetUsers(ctx *gin.Context, contextUser *control.ContextUser) (interface{}, *api.APIError) {
 	users, err := uc.userService.GetUsers()
 
 	if err != nil {
-		ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
-
-		return
+		return nil, api.NewInternalError(err)
 	}
 
 	var userResponses []schema.UserResponse
@@ -63,32 +54,26 @@ func (uc *UserController) GetUsers(ctx *gin.Context) {
 		userResponse := schema.UserResponse{}
 
 		if err := userResponse.FromModel(userModel); err != nil {
-			ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
-
-			return
+			return nil, api.NewInternalError(err)
 		}
 
 		userResponses = append(userResponses, userResponse)
 	}
 
-	ctx.JSON(http.StatusOK, userResponses)
+	return userResponses, nil
 }
 
 // SaveUser - saves single User to DB.
-func (uc *UserController) SaveUser(ctx *gin.Context) {
+func (uc *UserController) SaveUser(ctx *gin.Context, contextUser *control.ContextUser) (interface{}, *api.APIError) {
 	var user models.UserModel
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		ctx.JSON(api.ResponseFromError(api.NewBadRequestError(err)))
-
-		return
+		return nil, api.NewBadRequestError(err)
 	}
 
 	if err := uc.userService.SaveUser(&user); err != nil {
-		ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
-
-		return
+		return nil, api.NewInternalError(err)
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	return user, nil
 }

@@ -1,17 +1,20 @@
 package routing
 
 import (
+	"github.com/el-Mike/gochat/common/control"
 	"github.com/el-Mike/gochat/controllers"
-	"github.com/el-Mike/gochat/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
 // DefineAuthRoutes - registers auth routes.
 func DefineAuthRoutes(router *gin.RouterGroup) {
+	handlerCreator := control.NewHandlerCreator()
 	authController := controllers.NewAuthController()
 
-	router.POST("/signup", authController.SignUp)
-	router.POST("/login", authController.Login)
+	// Unauthenticated routes
+	router.POST("/signup", handlerCreator.CreateUnauthenticated(authController.SignUp))
+	router.POST("/login", handlerCreator.CreateUnauthenticated(authController.Login))
 
-	router.POST("/logout", middlewares.AuthMiddleware(), authController.Logout)
+	// Authenticated routes
+	router.POST("/logout", handlerCreator.CreateAuthenticated(authController.Logout))
 }
