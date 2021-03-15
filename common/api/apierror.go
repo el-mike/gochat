@@ -121,9 +121,3 @@ func NewBadRequestError(source error) *APIError {
 		Message:   source.Error(),
 	}
 }
-
-// Returns pair of values (http status, error) that satisfies Gin's
-// handler response.
-func ResponseFromError(err *APIError) (int, *APIError) {
-	return err.Status, err
-}
