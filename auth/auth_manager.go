@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/el-Mike/gochat/common/api"
 	"github.com/el-Mike/gochat/models"
 	"github.com/el-Mike/gochat/persist"
 	"github.com/go-redis/redis/v8"
@@ -56,8 +55,8 @@ func (am *AuthManager) Login(user *models.UserModel, apiSecret string) (string, 
 }
 
 // Logout - logs user out by removing it's authorization entry from Redis store.
-func (am *AuthManager) Logout(contextUser *api.ContextUser) error {
-	return am.redis.Del(ctx, contextUser.AuthUUID.String()).Err()
+func (am *AuthManager) Logout(authUUID string) error {
+	return am.redis.Del(ctx, authUUID).Err()
 }
 
 // VerifyToken - verifies and parses JWT token.

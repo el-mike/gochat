@@ -1,4 +1,4 @@
-package api
+package control
 
 import (
 	"github.com/google/uuid"
