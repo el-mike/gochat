@@ -16,10 +16,11 @@ type ErrorCode string
 
 // Map of valid error types (ErrorType).
 const (
-	AuthorizationError ErrorType = "AUTHORIZATION"
-	NotFoundError      ErrorType = "NOT_FOUND"
-	InternalError      ErrorType = "INTERNAL"
-	BadRequestError    ErrorType = "BAD_REQUEST"
+	AuthorizationError  ErrorType = "AUTHORIZATION"
+	AuthenticationError ErrorType = "AUTHENTICATION"
+	NotFoundError       ErrorType = "NOT_FOUND"
+	InternalError       ErrorType = "INTERNAL"
+	BadRequestError     ErrorType = "BAD_REQUEST"
 )
 
 // APIError holds a custom error for the application,
@@ -40,6 +41,8 @@ func getHttpStatusCode(errorType ErrorType) int {
 	switch errorType {
 	case AuthorizationError:
 		return http.StatusUnauthorized
+	case AuthenticationError:
+		return http.StatusForbidden
 	case NotFoundError:
 		return http.StatusNotFound
 	case InternalError:
@@ -52,7 +55,7 @@ func getHttpStatusCode(errorType ErrorType) int {
 
 }
 
-// Returns APIError related to general authorization problem.
+// NewAuthorizationError - returns APIError related to general authorization problem.
 func NewAuthorizationError(source error) *APIError {
 	return &APIError{
 		Status:    getHttpStatusCode(AuthorizationError),
@@ -62,7 +65,7 @@ func NewAuthorizationError(source error) *APIError {
 	}
 }
 
-// Returns APIError related to expired token.
+// NewTokenExpiredError - returns APIError related to expired token.
 func NewTokenExpiredError() *APIError {
 	return &APIError{
 		Status:    getHttpStatusCode(AuthorizationError),
@@ -72,7 +75,8 @@ func NewTokenExpiredError() *APIError {
 	}
 }
 
-// Returns APIError related to login credentials being incorrect.
+// NewLoginCredentialsIncorrectError - returns APIError related to
+// login credentials being incorrect.
 func NewLoginCredentialsIncorrectError() *APIError {
 	return &APIError{
 		Status:    getHttpStatusCode(AuthorizationError),
@@ -82,7 +86,7 @@ func NewLoginCredentialsIncorrectError() *APIError {
 	}
 }
 
-// Return APIError related to malformed token.
+// NewTokenMalforedError - returns APIError related to malformed token.
 func NewTokenMalforedError() *APIError {
 	return &APIError{
 		Status:    getHttpStatusCode(AuthorizationError),
@@ -92,7 +96,17 @@ func NewTokenMalforedError() *APIError {
 	}
 }
 
-// Returns APIError related to an entity which cannot be found.
+// NewAccessDeniedError - returns APIError related to missing permissions.
+func NewAccessDeniedError() *APIError {
+	return &APIError{
+		Status:    getHttpStatusCode(AuthenticationError),
+		Type:      AuthenticationError,
+		ErrorCode: "auth/access-denied",
+		Message:   "Acces denied - You don't have required permissions.",
+	}
+}
+
+// NewNotFoundError - returns APIError related to an entity which cannot be found.
 func NewNotFoundError(modelName string) *APIError {
 	return &APIError{
 		Status:    getHttpStatusCode(NotFoundError),
@@ -102,7 +116,7 @@ func NewNotFoundError(modelName string) *APIError {
 	}
 }
 
-// Returns APIError related to internal, runtime problem.
+// NewInternalError - returns APIError related to internal, runtime problem.
 func NewInternalError(source error) *APIError {
 	return &APIError{
 		Status:    getHttpStatusCode(InternalError),
@@ -112,7 +126,7 @@ func NewInternalError(source error) *APIError {
 	}
 }
 
-// Returns APIError related to clients's request being incorrect.
+// NewBadRequestError - returns APIError related to clients's request being incorrect.
 func NewBadRequestError(source error) *APIError {
 	return &APIError{
 		Status:    getHttpStatusCode(BadRequestError),
