@@ -4,6 +4,7 @@ import (
 	"github.com/el-Mike/gochat/common/control"
 	"github.com/el-Mike/gochat/common/control/rbac"
 	"github.com/el-Mike/gochat/controllers"
+	"github.com/el-Mike/gochat/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,15 +16,25 @@ func DefineUserRoutes(router *gin.RouterGroup) {
 	// Authenticated routes
 	router.GET("/me", handlerCreator.CreateAuthenticated(
 		userController.GetMe,
-		[]*rbac.Permission{},
+		[]*control.AccessRule{},
 	))
 
 	router.GET("/", handlerCreator.CreateAuthenticated(
 		userController.GetUsers,
-		[]*rbac.Permission{},
+		[]*control.AccessRule{
+			{
+				ResourceID: models.USER_RESOURCE,
+				Action:     rbac.ReadAny,
+			},
+		},
 	))
 	router.POST("/", handlerCreator.CreateAuthenticated(
 		userController.SaveUser,
-		[]*rbac.Permission{},
+		[]*control.AccessRule{
+			{
+				ResourceID: models.USER_RESOURCE,
+				Action:     rbac.Create,
+			},
+		},
 	))
 }

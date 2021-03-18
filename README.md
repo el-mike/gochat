@@ -25,6 +25,9 @@ REDIS_PASSWORD=
 
 API_SECRET=
 
+GOCHAT_ADMIN_PASSWORD=
+GOCHAT_ADMIN_EMAIL=
+
 ```
 
 2. Run `go install` to compile and install all required packages and dependencies.
@@ -42,6 +45,7 @@ There is VSC launch configuration available in the repository. In order to run G
 2. Set your IDE to use golangci-lint ([instructions](https://golangci-lint.run/usage/integrations/))
 3. Install [python3](https://www.python.org/download/releases/3.0/)
 4. Run `git config core.hooksPath .githooks` to wire up project's git hooks
+5. Install [migrate CLI](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate)
 
 ## Conventions
 

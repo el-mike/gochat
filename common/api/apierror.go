@@ -97,12 +97,12 @@ func NewTokenMalforedError() *APIError {
 }
 
 // NewAccessDeniedError - returns APIError related to missing permissions.
-func NewAccessDeniedError() *APIError {
+func NewAccessDeniedError(resource string, action string) *APIError {
 	return &APIError{
 		Status:    getHttpStatusCode(AuthenticationError),
 		Type:      AuthenticationError,
 		ErrorCode: "auth/access-denied",
-		Message:   "Acces denied - You don't have required permissions.",
+		Message:   fmt.Sprintf("Acces denied - You can't perform %v on resource %v", action, resource),
 	}
 }
 
