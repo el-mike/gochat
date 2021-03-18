@@ -34,9 +34,10 @@ func (am *AuthManager) Login(user *models.UserModel, apiSecret string) (string, 
 	authUUID := uuid.New().String()
 	userID := user.ID.String()
 	email := user.Email
+	role := user.Role
 	expiresAt := time.Now().Add(time.Minute * 15).Unix()
 
-	token, err := CreateToken(authUUID, userID, email, apiSecret, expiresAt)
+	token, err := CreateToken(authUUID, userID, email, role, apiSecret, expiresAt)
 
 	if err != nil {
 		return "", err

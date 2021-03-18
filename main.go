@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/el-Mike/gochat/common/control"
+	"github.com/el-Mike/gochat/common/control/rbac"
 	"github.com/el-Mike/gochat/routing"
 
 	"github.com/el-Mike/gochat/persist"
@@ -46,6 +48,12 @@ func main() {
 
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	_, err = rbac.InitAccessManager(control.Policy)
+
+	if err != nil {
+		log.Fatal("RBAC initialization failed")
 	}
 
 	routing.InitRouting()

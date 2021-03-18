@@ -10,15 +10,17 @@ type JWTClaims struct {
 	Email    string `json:"email"`
 	UserID   string `json:"userID"`
 	AuthUUID string `json:"authUUID"`
+	Role     string `json:"role"`
 }
 
 // CreateToken - creates a new token for the given user.
-func CreateToken(authUUID, userID, email, secret string, time int64) (string, error) {
+func CreateToken(authUUID, userID, email, role, secret string, time int64) (string, error) {
 	claims := &JWTClaims{}
 
 	claims.AuthUUID = authUUID
 	claims.UserID = userID
 	claims.Email = email
+	claims.Role = role
 
 	claims.ExpiresAt = time
 

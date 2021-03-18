@@ -28,7 +28,7 @@ func (uc *UserController) GetMe(ctx *gin.Context, contextUser *control.ContextUs
 	userModel, err := uc.userService.GetUserByID(id)
 
 	if err != nil {
-		return nil, api.NewNotFoundError(models.USER_MODEL_NAME)
+		return nil, api.NewNotFoundError(models.USER_RESOURCE)
 	}
 
 	userResponse := schema.UserResponse{}

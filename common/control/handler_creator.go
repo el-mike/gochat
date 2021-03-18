@@ -1,6 +1,7 @@
 package control
 
 import (
+	"log"
 	"os"
 
 	"github.com/el-Mike/gochat/common/api"
@@ -8,18 +9,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Controller function for unauthenticated routes.
+// BasicControllerFn - controller function for unauthenticated routes.
 type BasicControllerFn func(
 	ctx *gin.Context,
 ) (interface{}, *api.APIError)
 
-// Controller function for authenticated routes.
+// AuthenticatedControllerFn - controller function for authenticated routes.
 type AuthenticatedControllerFn func(
 	ctx *gin.Context,
 	user *ContextUser,
 ) (interface{}, *api.APIError)
 
-// HandlerCreator takes desired controller function and produces
+// HandlerCreator - takes desired controller function and produces
 // gin's HandlerFunc. It also takes care of setting response body based on
 // controller's return values.
 type HandlerCreator struct {
@@ -31,11 +32,11 @@ type HandlerCreator struct {
 func NewHandlerCreator() *HandlerCreator {
 	return &HandlerCreator{
 		authGuard:     NewAuthGuard(),
-		accessManager: rbac.NewAccessManager(),
+		accessManager: rbac.AM,
 	}
 }
 
-// Creates unauthenticated route.
+// CreateUnauthenticated - creates unauthenticated route.
 func (hc *HandlerCreator) CreateUnauthenticated(controllerFn BasicControllerFn) gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
@@ -50,10 +51,10 @@ func (hc *HandlerCreator) CreateUnauthenticated(controllerFn BasicControllerFn) 
 	}
 }
 
-// Creates authenticated route.
+// CreateAuthenticated - creates authenticated route.
 func (hc *HandlerCreator) CreateAuthenticated(
 	controllerFn AuthenticatedControllerFn,
-	requiredPermissions []*rbac.Permission,
+	accessRules []*AccessRule,
 ) gin.HandlerFunc {
 	apiSecret := os.Getenv("API_SECRET")
 
@@ -65,10 +66,24 @@ func (hc *HandlerCreator) CreateAuthenticated(
 			return
 		}
 
-		role := contextUser.Role()
+		for _, rule := range accessRules {
 
-		if canAccess := hc.accessManager.IsGranted(role, requiredPermissions...); !canAccess {
-			ctx.JSON(api.ResponseFromError(api.NewAccessDeniedError()))
+			if rule.Action == "" || rule.ResourceID == "" {
+				log.Print("Malformed AccessRule - omitting...")
+				continue
+			}
+
+			canAccess, err := hc.accessManager.IsGranted(contextUser.Role, rule.ResourceID, rule.Action)
+
+			if err != nil {
+				ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
+				return
+			}
+
+			if !canAccess {
+				ctx.JSON(api.ResponseFromError(api.NewAccessDeniedError(rule.ResourceID, string(rule.Action))))
+				return
+			}
 		}
 
 		result, err := controllerFn(ctx, contextUser)

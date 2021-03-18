@@ -1,9 +1,10 @@
 package rbac
 
-// Permission - definition of an action or set of actions
-// granted to a given Role.
+// Permission - result of checking if Action is granted
+// for a given Role in regard of wanted Resource.
 type Permission struct {
-	ID          string   `json:"id"`
-	Description string   `json:"description"`
-	Actions     []Action `json:"actions"`
+	ResourceID string   `json:"id"`
+	Actions    []Action `json:"actions"`
+	Attributes []string `json:"attributes"`
+	Granted    bool     `json:"granted"`
 }

@@ -59,11 +59,13 @@ func (ag *AuthGuard) CheckAuth(request *http.Request, apiSecret string) (*Contex
 	}
 
 	email := claims["email"].(string)
+	role := claims["role"].(string)
 
 	currentUser := &ContextUser{
 		ID:       userID,
 		AuthUUID: authUUID,
 		Email:    email,
+		Role:     role,
 	}
 
 	return currentUser, nil

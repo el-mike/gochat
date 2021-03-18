@@ -2,7 +2,6 @@ package routing
 
 import (
 	"github.com/el-Mike/gochat/common/control"
-	"github.com/el-Mike/gochat/common/control/rbac"
 	"github.com/el-Mike/gochat/controllers"
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +18,6 @@ func DefineAuthRoutes(router *gin.RouterGroup) {
 	// Authenticated routes
 	router.POST("/logout", handlerCreator.CreateAuthenticated(
 		authController.Logout,
-		[]*rbac.Permission{},
+		[]*control.AccessRule{},
 	))
 }
