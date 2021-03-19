@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"errors"
+
 	"github.com/dgrijalva/jwt-go"
 )
 
@@ -15,6 +17,15 @@ type JWTClaims struct {
 
 // CreateToken - creates a new token for the given user.
 func CreateToken(authUUID, userID, email, role, secret string, time int64) (string, error) {
+	if authUUID == "" ||
+		userID == "" ||
+		email == "" ||
+		role == "" ||
+		secret == "" ||
+		time == 0 {
+		return "", errors.New("Missing claims for JWT Token!")
+	}
+
 	claims := &JWTClaims{}
 
 	claims.AuthUUID = authUUID
