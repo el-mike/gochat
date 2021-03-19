@@ -1,5 +1,6 @@
 ALTER TABLE user_models
-ADD "role" VARCHAR (255);
+ADD COLUMN IF NOT EXISTS "role" VARCHAR (32);
 
 UPDATE user_models
-SET "role" = 'USER';
+SET "role" = 'USER'
+WHERE "role" IS NULL;
