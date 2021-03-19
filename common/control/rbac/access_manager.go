@@ -40,8 +40,9 @@ func (am *AccessManager) IsGranted(roleID string, resourceID string, actions ...
 	}
 
 	grants := role.Grants[resourceID]
+	parents := role.Parents
 
-	if len(grants) == 0 {
+	if len(grants) == 0 && len(parents) == 0 {
 		return false, nil
 	}
 
@@ -50,8 +51,8 @@ func (am *AccessManager) IsGranted(roleID string, resourceID string, actions ...
 			return true, nil
 		}
 
-		if len(role.Parents) > 0 {
-			for _, parent := range role.Parents {
+		if len(parents) > 0 {
+			for _, parent := range parents {
 				granted, err := am.IsGranted(parent, resourceID, action)
 
 				if err != nil {
