@@ -6,7 +6,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/el-Mike/gochat/auth"
-	"github.com/el-Mike/gochat/common/api"
+	"github.com/el-Mike/gochat/core/api"
 	"github.com/el-Mike/gochat/persist"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"

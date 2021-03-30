@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/el-Mike/gochat/common/api"
-	"github.com/el-Mike/gochat/common/control/rbac"
+	"github.com/el-Mike/gochat/core/api"
+	"github.com/el-Mike/gochat/core/control/rbac"
 	"github.com/gin-gonic/gin"
 )
 

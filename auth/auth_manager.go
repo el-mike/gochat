@@ -2,22 +2,43 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/el-Mike/gochat/common/interfaces"
 	"github.com/el-Mike/gochat/models"
 	"github.com/el-Mike/gochat/persist"
-	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
+type jwtProvider interface {
+	CreateToken(authUUID, userID, email, role, apiSecret string, time int64) (string, error)
+	ParseToken(tokenString string, apiSecret string) (*jwt.Token, error)
+}
+
+type cryptoProvider interface {
+	GenerateFromPassword(password []byte, cost int) ([]byte, error)
+	CompareHashAndPassword(hashedPassword, password []byte) error
+}
+
+type bcryptWrapper struct{}
+
+func (bw *bcryptWrapper) GenerateFromPassword(password []byte, cost int) ([]byte, error) {
+	return bcrypt.GenerateFromPassword(password, cost)
+}
+
+func (bw *bcryptWrapper) CompareHashAndPassword(hashedPassword, password []byte) error {
+	return bcrypt.CompareHashAndPassword(hashedPassword, password)
+}
+
 // AuthManager - manages auth related operations.
 type AuthManager struct {
-	redis *redis.Client
+	redis      interfaces.RedisCache
+	jwtManager jwtProvider
+	crypto     cryptoProvider
 }
 
 var ctx = context.Background()
@@ -25,7 +46,9 @@ var ctx = context.Background()
 // NewAuthManager - AuthManager constructor func.
 func NewAuthManager() *AuthManager {
 	return &AuthManager{
-		redis: persist.RedisClient,
+		redis:      *persist.RedisClient,
+		jwtManager: NewJWTManager(),
+		crypto:     &bcryptWrapper{},
 	}
 }
 
@@ -37,7 +60,7 @@ func (am *AuthManager) Login(user *models.UserModel, apiSecret string) (string, 
 	role := user.Role
 	expiresAt := time.Now().Add(time.Minute * 15).Unix()
 
-	token, err := CreateToken(authUUID, userID, email, role, apiSecret, expiresAt)
+	token, err := am.jwtManager.CreateToken(authUUID, userID, email, role, apiSecret, expiresAt)
 
 	if err != nil {
 		return "", err
@@ -64,13 +87,7 @@ func (am *AuthManager) Logout(authUUID string) error {
 func (am *AuthManager) VerifyToken(request *http.Request, apiSecret string) (*jwt.Token, error) {
 	tokenString := am.ExtractToken(request)
 
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-
-		return []byte(apiSecret), nil
-	})
+	token, err := am.jwtManager.ParseToken(tokenString, apiSecret)
 
 	if err != nil {
 		return nil, err
@@ -94,7 +111,7 @@ func (am *AuthManager) ExtractToken(request *http.Request) string {
 
 // HashAndSalt - returned bcrypt hashed password.
 func (am *AuthManager) HashAndSalt(password []byte) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword(password, bcrypt.MinCost)
+	hash, err := am.crypto.GenerateFromPassword(password, bcrypt.MinCost)
 
 	if err != nil {
 		return "", err
@@ -107,7 +124,7 @@ func (am *AuthManager) HashAndSalt(password []byte) (string, error) {
 func (am *AuthManager) ComparePasswords(hashedPassword string, plainPassword []byte) error {
 	byteHash := []byte(hashedPassword)
 
-	err := bcrypt.CompareHashAndPassword(byteHash, plainPassword)
+	err := am.crypto.CompareHashAndPassword(byteHash, plainPassword)
 
 	if err != nil {
 		return err
