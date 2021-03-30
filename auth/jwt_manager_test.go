@@ -6,14 +6,8 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
-
-var testAuthUUID = "testAuthUUID"
-var testUserID = "testUserID"
-var testEmail = "testEmail"
-var testRole = "testRole"
-var testSecret = "testSecret"
-var testTime = time.Now().Unix()
 
 type mockTokenProvider struct{}
 
@@ -25,34 +19,64 @@ func (mtp *mockTokenProvider) ParseToken(tokenString string, validateFunc jwt.Ke
 	return jwt.NewWithClaims(jwt.SigningMethodNone, &jwt.MapClaims{}), nil
 }
 
-var jwtManager = &JWTManager{
-	tokenProvider: &mockTokenProvider{},
+type jwtManagerSuite struct {
+	suite.Suite
+	jwtManager   *JWTManager
+	testAuthUUID string
+	testUserID   string
+	testEmail    string
+	testRole     string
+	testSecret   string
+	testTime     int64
 }
 
-func TestCreateTokenValid(t *testing.T) {
+func (s *jwtManagerSuite) SetupSuite() {
+	s.testAuthUUID = "testAuthUUID"
+	s.testUserID = "testUserID"
+	s.testEmail = "testEmail"
+	s.testRole = "testRole"
+	s.testSecret = "testSecret"
+	s.testTime = time.Now().Unix()
+}
+
+func (s *jwtManagerSuite) SetupTest() {
+	s.jwtManager = &JWTManager{
+		tokenProvider: &mockTokenProvider{},
+	}
+}
+
+func (s *jwtManagerSuite) TestCreateTokenValid() {
+	jwtManager := s.jwtManager
+
 	token, err := jwtManager.CreateToken(
-		testAuthUUID,
-		testUserID,
-		testEmail,
-		testRole,
-		testSecret,
-		testTime,
+		s.testAuthUUID,
+		s.testUserID,
+		s.testEmail,
+		s.testRole,
+		s.testSecret,
+		s.testTime,
 	)
 
-	assert.NotEmpty(t, token)
-	assert.Nil(t, err)
+	assert.NotEmpty(s.T(), token)
+	assert.Nil(s.T(), err)
 }
 
-func TestCreateTokenMissingArgs(t *testing.T) {
+func (s *jwtManagerSuite) TestCreateTokenMissingArgs() {
+	jwtManager := s.jwtManager
+
 	token, err := jwtManager.CreateToken(
-		testAuthUUID,
-		testUserID,
-		testEmail,
-		testRole,
+		s.testAuthUUID,
+		s.testUserID,
+		s.testEmail,
+		s.testRole,
 		"",
-		testTime,
+		s.testTime,
 	)
 
-	assert.Empty(t, token)
-	assert.NotNil(t, err)
+	assert.Empty(s.T(), token)
+	assert.NotNil(s.T(), err)
+}
+
+func TestJWTManagerSuite(t *testing.T) {
+	suite.Run(t, new(jwtManagerSuite))
 }
