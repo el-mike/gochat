@@ -6,10 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type AuthManagerMock struct {
-	AuthManager
-}
-
 func TestNewAuthManager(t *testing.T) {
 	am := NewAuthManager()
 
