@@ -1,9 +1,9 @@
 package routing
 
 import (
-	"github.com/el-Mike/gochat/common/control"
-	"github.com/el-Mike/gochat/common/control/rbac"
 	"github.com/el-Mike/gochat/controllers"
+	"github.com/el-Mike/gochat/core/control"
+	"github.com/el-Mike/gochat/core/control/rbac"
 	"github.com/el-Mike/gochat/models"
 	"github.com/gin-gonic/gin"
 )

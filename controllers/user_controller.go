@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"github.com/el-Mike/gochat/common/api"
-	"github.com/el-Mike/gochat/common/control"
+	"github.com/el-Mike/gochat/core/api"
+	"github.com/el-Mike/gochat/core/control"
 	"github.com/el-Mike/gochat/models"
 	"github.com/el-Mike/gochat/schema"
 	"github.com/el-Mike/gochat/services"

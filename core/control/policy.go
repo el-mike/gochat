@@ -1,7 +1,7 @@
 package control
 
 import (
-	"github.com/el-Mike/gochat/common/control/rbac"
+	"github.com/el-Mike/gochat/core/control/rbac"
 	"github.com/el-Mike/gochat/models"
 )
 

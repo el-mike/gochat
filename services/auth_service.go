@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/el-Mike/gochat/auth"
-	"github.com/el-Mike/gochat/common/control"
+	"github.com/el-Mike/gochat/core/control"
 	"github.com/el-Mike/gochat/models"
 	"github.com/el-Mike/gochat/persist"
 	"github.com/el-Mike/gochat/schema"

@@ -1,10 +1,10 @@
-package auth_test
+package auth
 
 import (
 	"testing"
 	"time"
 
-	"github.com/el-Mike/gochat/auth"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,8 +15,22 @@ var testRole = "testRole"
 var testSecret = "testSecret"
 var testTime = time.Now().Unix()
 
+type mockTokenProvider struct{}
+
+func (mtp *mockTokenProvider) CreateToken(claims jwt.Claims, secret string) (string, error) {
+	return "test_jwt_signed_token", nil
+}
+
+func (mtp *mockTokenProvider) ParseToken(tokenString string, validateFunc jwt.Keyfunc) (*jwt.Token, error) {
+	return jwt.NewWithClaims(jwt.SigningMethodNone, &jwt.MapClaims{}), nil
+}
+
+var jwtManager = &JWTManager{
+	tokenProvider: &mockTokenProvider{},
+}
+
 func TestCreateTokenValid(t *testing.T) {
-	token, err := auth.CreateToken(
+	token, err := jwtManager.CreateToken(
 		testAuthUUID,
 		testUserID,
 		testEmail,
@@ -30,7 +44,7 @@ func TestCreateTokenValid(t *testing.T) {
 }
 
 func TestCreateTokenMissingArgs(t *testing.T) {
-	token, err := auth.CreateToken(
+	token, err := jwtManager.CreateToken(
 		testAuthUUID,
 		testUserID,
 		testEmail,

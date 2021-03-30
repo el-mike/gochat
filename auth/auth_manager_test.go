@@ -1,18 +1,17 @@
-package auth_test
+package auth
 
 import (
 	"testing"
 
-	"github.com/el-Mike/gochat/auth"
 	"github.com/stretchr/testify/assert"
 )
 
 type AuthManagerMock struct {
-	auth.AuthManager
+	AuthManager
 }
 
 func TestNewAuthManager(t *testing.T) {
-	am := auth.NewAuthManager()
+	am := NewAuthManager()
 
 	assert.NotNil(t, am)
 }

@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/el-Mike/gochat/common/control"
-	"github.com/el-Mike/gochat/common/control/rbac"
+	"github.com/el-Mike/gochat/core/control"
+	"github.com/el-Mike/gochat/core/control/rbac"
 	"github.com/el-Mike/gochat/routing"
 
 	"github.com/el-Mike/gochat/persist"
