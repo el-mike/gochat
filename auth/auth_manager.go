@@ -24,13 +24,13 @@ type cryptoProvider interface {
 	CompareHashAndPassword(hashedPassword, password []byte) error
 }
 
-type bcryptWrapper struct{}
+type bcryptDelegate struct{}
 
-func (bw *bcryptWrapper) GenerateFromPassword(password []byte, cost int) ([]byte, error) {
+func (bw *bcryptDelegate) GenerateFromPassword(password []byte, cost int) ([]byte, error) {
 	return bcrypt.GenerateFromPassword(password, cost)
 }
 
-func (bw *bcryptWrapper) CompareHashAndPassword(hashedPassword, password []byte) error {
+func (bw *bcryptDelegate) CompareHashAndPassword(hashedPassword, password []byte) error {
 	return bcrypt.CompareHashAndPassword(hashedPassword, password)
 }
 
@@ -47,7 +47,7 @@ func NewAuthManager() *AuthManager {
 	return &AuthManager{
 		redis:  *persist.RedisClient,
 		jwt:    NewJWTManager(),
-		crypto: &bcryptWrapper{},
+		crypto: &bcryptDelegate{},
 		ctx:    context.Background(),
 	}
 }
@@ -85,7 +85,7 @@ func (am *AuthManager) Logout(authUUID string) error {
 
 // VerifyToken - verifies and parses JWT token.
 func (am *AuthManager) VerifyToken(request *http.Request, apiSecret string) (*jwt.Token, error) {
-	tokenString := am.ExtractToken(request)
+	tokenString := am.extractToken(request)
 
 	token, err := am.jwt.ParseToken(tokenString, apiSecret)
 
@@ -96,8 +96,8 @@ func (am *AuthManager) VerifyToken(request *http.Request, apiSecret string) (*jw
 	return token, nil
 }
 
-// ExtractToken - extracts bearer token from request's headers.
-func (am *AuthManager) ExtractToken(request *http.Request) string {
+// extractToken - extracts bearer token from request's headers.
+func (am *AuthManager) extractToken(request *http.Request) string {
 	token := request.Header.Get("Authorization")
 
 	parts := strings.Split(token, " ")
