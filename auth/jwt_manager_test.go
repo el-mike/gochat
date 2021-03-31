@@ -1,58 +1,194 @@
 package auth
 
 import (
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 )
 
-var testAuthUUID = "testAuthUUID"
-var testUserID = "testUserID"
-var testEmail = "testEmail"
-var testRole = "testRole"
-var testSecret = "testSecret"
-var testTime = time.Now().Unix()
-
-type mockTokenProvider struct{}
-
-func (mtp *mockTokenProvider) CreateToken(claims jwt.Claims, secret string) (string, error) {
-	return "test_jwt_signed_token", nil
+type tokenProviderMock struct {
+	mock.Mock
 }
 
-func (mtp *mockTokenProvider) ParseToken(tokenString string, validateFunc jwt.Keyfunc) (*jwt.Token, error) {
-	return jwt.NewWithClaims(jwt.SigningMethodNone, &jwt.MapClaims{}), nil
+func (mtp *tokenProviderMock) CreateToken(claims jwt.Claims, secret string) (string, error) {
+	args := mtp.Called(claims, secret)
+
+	return args.String(0), args.Error(1)
 }
 
-var jwtManager = &JWTManager{
-	tokenProvider: &mockTokenProvider{},
+func (mtp *tokenProviderMock) ParseToken(tokenString string, validateFunc jwt.Keyfunc) (*jwt.Token, error) {
+	args := mtp.Called(tokenString, validateFunc)
+
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	token := args.Get(0).(*jwt.Token)
+
+	if _, err := validateFunc(token); err != nil {
+		return nil, err
+	}
+
+	return token, args.Error(1)
 }
 
-func TestCreateTokenValid(t *testing.T) {
+type jwtManagerSuite struct {
+	suite.Suite
+	jwtManager      *JWTManager
+	testAuthUUID    string
+	testUserID      string
+	testEmail       string
+	testRole        string
+	testSecret      string
+	testTime        int64
+	testTokenString string
+	testToken       *jwt.Token
+}
+
+func (s *jwtManagerSuite) SetupSuite() {
+	s.testAuthUUID = "testAuthUUID"
+	s.testUserID = "testUserID"
+	s.testEmail = "testEmail"
+	s.testRole = "testRole"
+	s.testSecret = "testSecret"
+	s.testTime = time.Now().Unix()
+	s.testTokenString = "test_token_string"
+	s.testToken = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{})
+}
+
+func (s *jwtManagerSuite) SetupTest() {
+	s.jwtManager = &JWTManager{
+		tokenProvider: &tokenProviderMock{},
+	}
+}
+
+func (s *jwtManagerSuite) TestNewJWTManager() {
+	jwtManager := NewJWTManager()
+
+	assert.NotNil(s.T(), jwtManager)
+	assert.NotNil(s.T(), jwtManager.tokenProvider)
+}
+
+func (s *jwtManagerSuite) TestCreateTokenValid() {
+	jwtManager := s.jwtManager
+
+	tokenMock := new(tokenProviderMock)
+	tokenMock.On(
+		"CreateToken",
+		mock.Anything,
+		mock.Anything,
+	).Return(s.testTokenString, nil)
+
+	jwtManager.tokenProvider = tokenMock
+
 	token, err := jwtManager.CreateToken(
-		testAuthUUID,
-		testUserID,
-		testEmail,
-		testRole,
-		testSecret,
-		testTime,
+		s.testAuthUUID,
+		s.testUserID,
+		s.testEmail,
+		s.testRole,
+		s.testSecret,
+		s.testTime,
 	)
 
-	assert.NotEmpty(t, token)
-	assert.Nil(t, err)
+	assert.NotEmpty(s.T(), token)
+	assert.Nil(s.T(), err)
+
+	tokenMock.AssertNumberOfCalls(s.T(), "CreateToken", 1)
 }
 
-func TestCreateTokenMissingArgs(t *testing.T) {
+func (s *jwtManagerSuite) TestCreateTokenMissingArgs() {
+	jwtManager := s.jwtManager
+
+	tokenMock := new(tokenProviderMock)
+	tokenMock.On(
+		"CreateToken",
+		mock.Anything,
+		mock.Anything,
+	).Return(s.testTokenString, nil)
+
+	jwtManager.tokenProvider = tokenMock
+
 	token, err := jwtManager.CreateToken(
-		testAuthUUID,
-		testUserID,
-		testEmail,
-		testRole,
+		s.testAuthUUID,
+		s.testUserID,
+		s.testEmail,
+		s.testRole,
 		"",
-		testTime,
+		s.testTime,
 	)
 
-	assert.Empty(t, token)
-	assert.NotNil(t, err)
+	assert.Empty(s.T(), token)
+	assert.NotNil(s.T(), err)
+}
+
+func (s *jwtManagerSuite) TestParseToken() {
+	jwtManager := s.jwtManager
+
+	tokenMock := new(tokenProviderMock)
+	tokenMock.On(
+		"ParseToken",
+		mock.Anything,
+		mock.Anything,
+	).Return(s.testToken, nil)
+
+	jwtManager.tokenProvider = tokenMock
+
+	token, err := jwtManager.ParseToken(s.testTokenString, s.testSecret)
+
+	assert.NotNil(s.T(), token)
+	assert.Nil(s.T(), err)
+
+	tokenMock.AssertNumberOfCalls(s.T(), "ParseToken", 1)
+	tokenMock.AssertCalled(s.T(), "ParseToken", s.testTokenString, mock.Anything)
+}
+
+func (s *jwtManagerSuite) TestParseTokenWithErrors() {
+	jwtManager := s.jwtManager
+
+	tokenMock := new(tokenProviderMock)
+	tokenMock.On(
+		"ParseToken",
+		mock.Anything,
+		mock.Anything,
+	).Return(nil, errors.New("token_error"))
+
+	jwtManager.tokenProvider = tokenMock
+
+	token, err := jwtManager.ParseToken(s.testTokenString, s.testSecret)
+
+	assert.Nil(s.T(), token)
+	assert.NotNil(s.T(), err)
+
+	tokenMock.AssertNumberOfCalls(s.T(), "ParseToken", 1)
+}
+
+func (s *jwtManagerSuite) TestParseTokenWithFailingValidation() {
+	jwtManager := s.jwtManager
+
+	testToken := jwt.NewWithClaims(jwt.SigningMethodNone, jwt.MapClaims{})
+
+	tokenMock := new(tokenProviderMock)
+	tokenMock.On(
+		"ParseToken",
+		mock.Anything,
+		mock.Anything,
+	).Return(testToken, nil)
+
+	jwtManager.tokenProvider = tokenMock
+
+	token, err := jwtManager.ParseToken(s.testTokenString, s.testSecret)
+
+	assert.Nil(s.T(), token)
+	assert.NotNil(s.T(), err)
+
+	tokenMock.AssertNumberOfCalls(s.T(), "ParseToken", 1)
+}
+
+func TestJWTManagerSuite(t *testing.T) {
+	suite.Run(t, new(jwtManagerSuite))
 }

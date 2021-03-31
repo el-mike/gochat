@@ -24,31 +24,31 @@ type cryptoProvider interface {
 	CompareHashAndPassword(hashedPassword, password []byte) error
 }
 
-type bcryptWrapper struct{}
+type bcryptDelegate struct{}
 
-func (bw *bcryptWrapper) GenerateFromPassword(password []byte, cost int) ([]byte, error) {
+func (bw *bcryptDelegate) GenerateFromPassword(password []byte, cost int) ([]byte, error) {
 	return bcrypt.GenerateFromPassword(password, cost)
 }
 
-func (bw *bcryptWrapper) CompareHashAndPassword(hashedPassword, password []byte) error {
+func (bw *bcryptDelegate) CompareHashAndPassword(hashedPassword, password []byte) error {
 	return bcrypt.CompareHashAndPassword(hashedPassword, password)
 }
 
 // AuthManager - manages auth related operations.
 type AuthManager struct {
-	redis      interfaces.RedisCache
-	jwtManager jwtProvider
-	crypto     cryptoProvider
+	redis  interfaces.RedisCache
+	jwt    jwtProvider
+	crypto cryptoProvider
+	ctx    context.Context
 }
-
-var ctx = context.Background()
 
 // NewAuthManager - AuthManager constructor func.
 func NewAuthManager() *AuthManager {
 	return &AuthManager{
-		redis:      *persist.RedisClient,
-		jwtManager: NewJWTManager(),
-		crypto:     &bcryptWrapper{},
+		redis:  *persist.RedisClient,
+		jwt:    NewJWTManager(),
+		crypto: &bcryptDelegate{},
+		ctx:    context.Background(),
 	}
 }
 
@@ -60,7 +60,7 @@ func (am *AuthManager) Login(user *models.UserModel, apiSecret string) (string, 
 	role := user.Role
 	expiresAt := time.Now().Add(time.Minute * 15).Unix()
 
-	token, err := am.jwtManager.CreateToken(authUUID, userID, email, role, apiSecret, expiresAt)
+	token, err := am.jwt.CreateToken(authUUID, userID, email, role, apiSecret, expiresAt)
 
 	if err != nil {
 		return "", err
@@ -69,7 +69,7 @@ func (am *AuthManager) Login(user *models.UserModel, apiSecret string) (string, 
 	// Saving authorization allows us to double check the token - when user logs out,
 	// token will be removed, and no one will be able to use it anymore, even if it's not
 	// expired.
-	err = am.redis.Set(ctx, authUUID, userID, 0).Err()
+	err = am.redis.Set(am.ctx, authUUID, userID, 0).Err()
 
 	if err != nil {
 		return "", err
@@ -80,14 +80,14 @@ func (am *AuthManager) Login(user *models.UserModel, apiSecret string) (string, 
 
 // Logout - logs user out by removing it's authorization entry from Redis store.
 func (am *AuthManager) Logout(authUUID string) error {
-	return am.redis.Del(ctx, authUUID).Err()
+	return am.redis.Del(am.ctx, authUUID).Err()
 }
 
 // VerifyToken - verifies and parses JWT token.
 func (am *AuthManager) VerifyToken(request *http.Request, apiSecret string) (*jwt.Token, error) {
-	tokenString := am.ExtractToken(request)
+	tokenString := am.extractToken(request)
 
-	token, err := am.jwtManager.ParseToken(tokenString, apiSecret)
+	token, err := am.jwt.ParseToken(tokenString, apiSecret)
 
 	if err != nil {
 		return nil, err
@@ -96,8 +96,8 @@ func (am *AuthManager) VerifyToken(request *http.Request, apiSecret string) (*jw
 	return token, nil
 }
 
-// ExtractToken - extracts bearer token from request's headers.
-func (am *AuthManager) ExtractToken(request *http.Request) string {
+// extractToken - extracts bearer token from request's headers.
+func (am *AuthManager) extractToken(request *http.Request) string {
 	token := request.Header.Get("Authorization")
 
 	parts := strings.Split(token, " ")
