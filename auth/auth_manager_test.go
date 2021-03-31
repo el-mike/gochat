@@ -61,10 +61,6 @@ func (cr *cryptoMock) CompareHashAndPassword(hashedPassword, password []byte) er
 	return args.Error(0)
 }
 
-type AuthManagerMock struct {
-	AuthManager
-}
-
 type authManagerSuite struct {
 	suite.Suite
 	authManager     *AuthManager
