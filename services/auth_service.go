@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"os"
 
 	"github.com/el-Mike/gochat/auth"
@@ -10,11 +11,21 @@ import (
 	"github.com/el-Mike/gochat/schema"
 )
 
+type userService interface {
+	SaveUser(*models.UserModel) error
+}
+
+type authManager interface {
+	Login(user *models.UserModel, apiSecret string) (string, error)
+	Logout(authUUID string) error
+	HashAndSalt(password []byte) (string, error)
+}
+
 // AuthService - struct for handling auth related logic.
 type AuthService struct {
 	broker      persist.DBBroker
-	userService *UserService
-	authManager *auth.AuthManager
+	userService userService
+	authManager authManager
 }
 
 // NewAuthService - AuthService constructor func.
@@ -29,6 +40,10 @@ func NewAuthService() *AuthService {
 // Login - logs in a user.
 func (as *AuthService) Login(user *models.UserModel) (string, error) {
 	apiSecret := os.Getenv("API_SECRET")
+
+	if apiSecret == "" {
+		return "", errors.New("Missing API Secret!")
+	}
 
 	token, err := as.authManager.Login(user, apiSecret)
 

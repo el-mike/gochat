@@ -46,6 +46,16 @@ func (s *userServiceSuite) SetupTest() {
 	}
 }
 
+func TestUserServiceSuite(t *testing.T) {
+	suite.Run(t, new(userServiceSuite))
+}
+
+func (s *userServiceSuite) TestNewUserService() {
+	userService := NewUserService()
+
+	assert.NotNil(s.T(), userService)
+}
+
 func (s *userServiceSuite) TestGetUserByID() {
 	userService := s.userService
 
@@ -107,6 +117,110 @@ func (s *userServiceSuite) TestGetUserByEmail() {
 	assert.Nil(s.T(), err)
 }
 
-func TestUserServiceSuite(t *testing.T) {
-	suite.Run(t, new(userServiceSuite))
+func (s *userServiceSuite) TestGetUserByEmail_Error() {
+	userService := s.userService
+
+	gormMock := new(mocks.GormMock)
+	gormMock.On(
+		"FirstWhere",
+		mock.Anything,
+		mock.Anything,
+		mock.Anything,
+	).Return(mocks.GetErrorDBResponse(errors.New("GormError")))
+
+	userService.broker = gormMock
+
+	user, err := userService.GetUserByEmail(s.testUser.Email)
+
+	gormMock.AssertNumberOfCalls(s.T(), "FirstWhere", 1)
+
+	assert.Nil(s.T(), user)
+	assert.NotNil(s.T(), err)
+}
+
+func (s *userServiceSuite) TestGetUsers() {
+	userService := s.userService
+
+	gormMock := new(mocks.GormMock)
+	gormMock.On(
+		"Find",
+		mock.Anything,
+		mock.Anything,
+	).Return(mocks.GetDefaultDBResponse())
+
+	userService.broker = gormMock
+
+	_, err := userService.GetUsers()
+
+	gormMock.AssertNumberOfCalls(s.T(), "Find", 1)
+
+	assert.Nil(s.T(), err)
+}
+
+func (s *userServiceSuite) TestGetUsers_Error() {
+	userService := s.userService
+
+	gormMock := new(mocks.GormMock)
+	gormMock.On(
+		"Find",
+		mock.Anything,
+		mock.Anything,
+	).Return(mocks.GetErrorDBResponse(errors.New("GormError")))
+
+	userService.broker = gormMock
+
+	user, err := userService.GetUsers()
+
+	gormMock.AssertNumberOfCalls(s.T(), "Find", 1)
+
+	assert.Nil(s.T(), user)
+	assert.NotNil(s.T(), err)
+}
+
+func (s *userServiceSuite) TestSaveUser() {
+	userService := s.userService
+
+	gormMock := new(mocks.GormMock)
+	gormMock.On(
+		"Save",
+		mock.Anything,
+		mock.Anything,
+	).Return(mocks.GetDefaultDBResponse())
+
+	userService.broker = gormMock
+
+	err := userService.SaveUser(s.testUser)
+
+	gormMock.AssertNumberOfCalls(s.T(), "Save", 1)
+	gormMock.AssertCalled(
+		s.T(),
+		"Save",
+		s.testUser,
+	)
+
+	assert.Nil(s.T(), err)
+}
+
+func (s *userServiceSuite) TestSaveUser_Error() {
+	userService := s.userService
+
+	gormMock := new(mocks.GormMock)
+	gormMock.On(
+		"Save",
+		mock.Anything,
+		mock.Anything,
+	).Return(mocks.GetErrorDBResponse(errors.New("GormError")))
+
+	userService.broker = gormMock
+
+	err := userService.SaveUser(s.testUser)
+
+	gormMock.AssertNumberOfCalls(s.T(), "Save", 1)
+	gormMock.AssertCalled(
+		s.T(),
+		"Save",
+		s.testUser,
+	)
+
+	assert.NotNil(s.T(), err)
 }

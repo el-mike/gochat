@@ -104,6 +104,10 @@ func (s *authManagerSuite) SetupTest() {
 	}
 }
 
+func TestAuthManagerSuite(t *testing.T) {
+	suite.Run(t, new(authManagerSuite))
+}
+
 func (s *authManagerSuite) TestLogin() {
 	authManager := s.authManager
 
@@ -362,8 +366,4 @@ func (s *authManagerSuite) TestComparePasswordWithError() {
 	assert.NotNil(s.T(), err)
 
 	cryptoMock.AssertNumberOfCalls(s.T(), "CompareHashAndPassword", 1)
-}
-
-func TestAuthManagerSuite(t *testing.T) {
-	suite.Run(t, new(authManagerSuite))
 }
