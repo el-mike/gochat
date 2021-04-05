@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"os"
 
 	"github.com/el-Mike/gochat/auth"
@@ -8,23 +9,29 @@ import (
 	"github.com/el-Mike/gochat/models"
 	"github.com/el-Mike/gochat/persist"
 	"github.com/el-Mike/gochat/schema"
-	"github.com/go-redis/redis/v8"
-	"gorm.io/gorm"
 )
+
+type userService interface {
+	SaveUser(*models.UserModel) error
+}
+
+type authManager interface {
+	Login(user *models.UserModel, apiSecret string) (string, error)
+	Logout(authUUID string) error
+	HashAndSalt(password []byte) (string, error)
+}
 
 // AuthService - struct for handling auth related logic.
 type AuthService struct {
-	broker      *gorm.DB
-	redis       *redis.Client
-	userService *UserService
-	authManager *auth.AuthManager
+	broker      persist.DBBroker
+	userService userService
+	authManager authManager
 }
 
 // NewAuthService - AuthService constructor func.
 func NewAuthService() *AuthService {
 	return &AuthService{
-		broker:      persist.DB,
-		redis:       persist.RedisClient,
+		broker:      persist.GormBroker,
 		userService: NewUserService(),
 		authManager: auth.NewAuthManager(),
 	}
@@ -33,6 +40,10 @@ func NewAuthService() *AuthService {
 // Login - logs in a user.
 func (as *AuthService) Login(user *models.UserModel) (string, error) {
 	apiSecret := os.Getenv("API_SECRET")
+
+	if apiSecret == "" {
+		return "", errors.New("Missing API Secret!")
+	}
 
 	token, err := as.authManager.Login(user, apiSecret)
 

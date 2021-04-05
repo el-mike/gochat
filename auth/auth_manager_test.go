@@ -97,11 +97,15 @@ func (s *authManagerSuite) SetupSuite() {
 
 func (s *authManagerSuite) SetupTest() {
 	s.authManager = &AuthManager{
-		redis:  mocks.NewRedisCacheMock(),
+		cache:  mocks.NewRedisCacheMock(),
 		jwt:    &jwtManagerMock{},
 		crypto: &cryptoMock{},
 		ctx:    context.Background(),
 	}
+}
+
+func TestAuthManagerSuite(t *testing.T) {
+	suite.Run(t, new(authManagerSuite))
 }
 
 func (s *authManagerSuite) TestLogin() {
@@ -125,17 +129,17 @@ func (s *authManagerSuite) TestLogin() {
 		mock.Anything,
 	).Return(s.testTokenString, nil)
 
-	redisMock := new(mocks.RedisCacheMock)
-	redisMock.On(
+	cacheMock := new(mocks.RedisCacheMock)
+	cacheMock.On(
 		"Set",
 		mock.Anything,
 		mock.Anything,
 		mock.Anything,
 		mock.Anything,
-	).Return(mocks.GetDefaultStatusCmd())
+	).Return(mocks.GetDefaultCacheResponse())
 
 	authManager.jwt = jwtMock
-	authManager.redis = redisMock
+	authManager.cache = cacheMock
 
 	token, err := authManager.Login(testUser, s.testSecret)
 
@@ -151,7 +155,7 @@ func (s *authManagerSuite) TestLogin() {
 		mock.Anything,
 	)
 
-	redisMock.AssertNumberOfCalls(s.T(), "Set", 1)
+	cacheMock.AssertNumberOfCalls(s.T(), "Set", 1)
 
 	assert.NotEmpty(s.T(), token)
 	assert.Equal(s.T(), s.testTokenString, token)
@@ -172,24 +176,24 @@ func (s *authManagerSuite) TestLoginWithErrors() {
 		mock.Anything,
 	).Return("", s.testError)
 
-	redisMock := new(mocks.RedisCacheMock)
-	redisMock.On(
+	cacheMock := new(mocks.RedisCacheMock)
+	cacheMock.On(
 		"Set",
 		mock.Anything,
 		mock.Anything,
 		mock.Anything,
 		mock.Anything,
-	).Return(mocks.GetErrorStatusCmd(errors.New("redis_error")))
+	).Return(mocks.GetErrorCacheResponse(errors.New("cache_error")))
 
 	authManager.jwt = jwtMock
-	authManager.redis = redisMock
+	authManager.cache = cacheMock
 
 	token, err := authManager.Login(s.testUser, s.testSecret)
 
 	assert.Empty(s.T(), token)
 	assert.NotNil(s.T(), err)
 	jwtMock.AssertNumberOfCalls(s.T(), "CreateToken", 1)
-	redisMock.AssertNumberOfCalls(s.T(), "Set", 0)
+	cacheMock.AssertNumberOfCalls(s.T(), "Set", 0)
 
 	jwtMock = new(jwtManagerMock)
 	jwtMock.On(
@@ -209,28 +213,28 @@ func (s *authManagerSuite) TestLoginWithErrors() {
 	assert.Empty(s.T(), token)
 	assert.NotNil(s.T(), err)
 	jwtMock.AssertNumberOfCalls(s.T(), "CreateToken", 1)
-	redisMock.AssertNumberOfCalls(s.T(), "Set", 1)
+	cacheMock.AssertNumberOfCalls(s.T(), "Set", 1)
 
 }
 
 func (s *authManagerSuite) TestLogout() {
 	authManager := s.authManager
 
-	redisMock := new(mocks.RedisCacheMock)
-	redisMock.On(
+	cacheMock := new(mocks.RedisCacheMock)
+	cacheMock.On(
 		"Del",
 		mock.Anything,
 		mock.Anything,
-	).Return(mocks.GetDefaultIntCmd())
+	).Return(mocks.GetDefaultCacheResponse())
 
-	authManager.redis = redisMock
+	authManager.cache = cacheMock
 
 	err := authManager.Logout(s.testAuthUUID.String())
 
 	assert.Nil(s.T(), err)
 
-	redisMock.AssertCalled(s.T(), "Del", mock.Anything, []string{s.testAuthUUID.String()})
-	redisMock.AssertNumberOfCalls(s.T(), "Del", 1)
+	cacheMock.AssertCalled(s.T(), "Del", mock.Anything, []string{s.testAuthUUID.String()})
+	cacheMock.AssertNumberOfCalls(s.T(), "Del", 1)
 }
 
 func (s *authManagerSuite) TestVerifyToken() {
@@ -362,8 +366,4 @@ func (s *authManagerSuite) TestComparePasswordWithError() {
 	assert.NotNil(s.T(), err)
 
 	cryptoMock.AssertNumberOfCalls(s.T(), "CompareHashAndPassword", 1)
-}
-
-func TestAuthManagerSuite(t *testing.T) {
-	suite.Run(t, new(authManagerSuite))
 }

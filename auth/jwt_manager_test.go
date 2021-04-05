@@ -67,6 +67,10 @@ func (s *jwtManagerSuite) SetupTest() {
 	}
 }
 
+func TestJWTManagerSuite(t *testing.T) {
+	suite.Run(t, new(jwtManagerSuite))
+}
+
 func (s *jwtManagerSuite) TestNewJWTManager() {
 	jwtManager := NewJWTManager()
 
@@ -187,8 +191,4 @@ func (s *jwtManagerSuite) TestParseTokenWithFailingValidation() {
 	assert.NotNil(s.T(), err)
 
 	tokenMock.AssertNumberOfCalls(s.T(), "ParseToken", 1)
-}
-
-func TestJWTManagerSuite(t *testing.T) {
-	suite.Run(t, new(jwtManagerSuite))
 }
