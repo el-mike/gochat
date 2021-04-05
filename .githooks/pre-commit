@@ -1,3 +1,4 @@
 #!/usr/bin/env sh
 
 exec golangci-lint run "$@"
+exec go test ./...
