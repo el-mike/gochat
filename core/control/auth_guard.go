@@ -8,7 +8,6 @@ import (
 	"github.com/el-Mike/gochat/auth"
 	"github.com/el-Mike/gochat/core/api"
 	"github.com/el-Mike/gochat/persist"
-	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 )
 
@@ -18,14 +17,14 @@ var ctx = context.Background()
 // veryfying the token.
 type AuthGuard struct {
 	authManager *auth.AuthManager
-	redis       *redis.Client
+	cache       persist.Cache
 }
 
-// Returns new AuthGuard instance.
+// NewAuthGuard - returns new AuthGuard instance.
 func NewAuthGuard() *AuthGuard {
 	return &AuthGuard{
 		authManager: auth.NewAuthManager(),
-		redis:       persist.RedisClient,
+		cache:       persist.RedisCache,
 	}
 }
 
@@ -54,7 +53,7 @@ func (ag *AuthGuard) CheckAuth(request *http.Request, apiSecret string) (*Contex
 	// If there is no authentication entry is Redis store, it means that
 	// user logged out from the application - therefore token expired,
 	// even if it's still valid time-wise.
-	if err := ag.redis.Get(ctx, authUUID.String()).Err(); err != nil {
+	if err := ag.cache.Get(ctx, authUUID.String()).Err(); err != nil {
 		return nil, api.NewTokenExpiredError()
 	}
 

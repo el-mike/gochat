@@ -8,14 +8,11 @@ import (
 	"github.com/el-Mike/gochat/models"
 	"github.com/el-Mike/gochat/persist"
 	"github.com/el-Mike/gochat/schema"
-	"github.com/go-redis/redis/v8"
-	"gorm.io/gorm"
 )
 
 // AuthService - struct for handling auth related logic.
 type AuthService struct {
-	broker      *gorm.DB
-	redis       *redis.Client
+	broker      persist.DBBroker
 	userService *UserService
 	authManager *auth.AuthManager
 }
@@ -23,8 +20,7 @@ type AuthService struct {
 // NewAuthService - AuthService constructor func.
 func NewAuthService() *AuthService {
 	return &AuthService{
-		broker:      persist.DB,
-		redis:       persist.RedisClient,
+		broker:      persist.GormBroker,
 		userService: NewUserService(),
 		authManager: auth.NewAuthManager(),
 	}

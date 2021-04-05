@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/el-Mike/gochat/common/interfaces"
 	"github.com/el-Mike/gochat/models"
 	"github.com/el-Mike/gochat/persist"
 	"github.com/google/uuid"
@@ -36,7 +35,7 @@ func (bw *bcryptDelegate) CompareHashAndPassword(hashedPassword, password []byte
 
 // AuthManager - manages auth related operations.
 type AuthManager struct {
-	redis  interfaces.RedisCache
+	cache  persist.Cache
 	jwt    jwtProvider
 	crypto cryptoProvider
 	ctx    context.Context
@@ -45,7 +44,7 @@ type AuthManager struct {
 // NewAuthManager - AuthManager constructor func.
 func NewAuthManager() *AuthManager {
 	return &AuthManager{
-		redis:  *persist.RedisClient,
+		cache:  persist.RedisCache,
 		jwt:    NewJWTManager(),
 		crypto: &bcryptDelegate{},
 		ctx:    context.Background(),
@@ -69,7 +68,7 @@ func (am *AuthManager) Login(user *models.UserModel, apiSecret string) (string, 
 	// Saving authorization allows us to double check the token - when user logs out,
 	// token will be removed, and no one will be able to use it anymore, even if it's not
 	// expired.
-	err = am.redis.Set(am.ctx, authUUID, userID, 0).Err()
+	err = am.cache.Set(am.ctx, authUUID, userID, 0).Err()
 
 	if err != nil {
 		return "", err
@@ -80,7 +79,7 @@ func (am *AuthManager) Login(user *models.UserModel, apiSecret string) (string, 
 
 // Logout - logs user out by removing it's authorization entry from Redis store.
 func (am *AuthManager) Logout(authUUID string) error {
-	return am.redis.Del(am.ctx, authUUID).Err()
+	return am.cache.Del(am.ctx, authUUID).Err()
 }
 
 // VerifyToken - verifies and parses JWT token.

@@ -38,7 +38,7 @@ func main() {
 	redisPassword := os.Getenv("REDIS_PASSWORD")
 
 	_, err := persist.InitDatabase(pgUser, pgPassword, pgDBname, pgHost, pgPort)
-	_ = persist.InitRedisClient(redisHost, redisPort, redisPassword)
+	_ = persist.InitRedisCache(redisHost, redisPort, redisPassword)
 
 	if err != nil {
 		log.Fatal("Database connection failed")

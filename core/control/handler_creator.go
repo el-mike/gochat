@@ -28,7 +28,7 @@ type HandlerCreator struct {
 	accessManager *rbac.AccessManager
 }
 
-// Returns HandlerCreator instance.
+// NewHandlerCreator - returns HandlerCreator instance.
 func NewHandlerCreator() *HandlerCreator {
 	return &HandlerCreator{
 		authGuard:     NewAuthGuard(),
