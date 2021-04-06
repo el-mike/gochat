@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"errors"
+
 	"github.com/el-Mike/gochat/core/api"
 	"github.com/el-Mike/gochat/core/control"
 	"github.com/el-Mike/gochat/models"
@@ -69,6 +71,15 @@ func (uc *UserController) SaveUser(ctx *gin.Context, contextUser *control.Contex
 
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		return nil, api.NewBadRequestError(err)
+	}
+
+	existingUser, err := uc.userService.GetUserByEmail(user.Email)
+	if err != nil {
+		return nil, api.NewInternalError(err)
+	}
+
+	if existingUser != nil {
+		return nil, api.NewBadRequestError(errors.New("User already exists."))
 	}
 
 	if err := uc.userService.SaveUser(&user); err != nil {
