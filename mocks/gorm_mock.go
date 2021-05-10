@@ -69,6 +69,16 @@ func (gm *GormMock) Save(value interface{}) *persist.DBResponse {
 	return args.Get(0).(*persist.DBResponse)
 }
 
+func (gm *GormMock) DeleteByID(target interface{}, id interface{}) *persist.DBResponse {
+	args := gm.Called(target, id)
+
+	if args.Get(0) == nil {
+		return nil
+	}
+
+	return args.Get(0).(*persist.DBResponse)
+}
+
 func GetDefaultDBResponse() *persist.DBResponse {
 	return persist.NewDBResponse()
 }

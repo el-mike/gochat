@@ -224,3 +224,53 @@ func (s *userServiceSuite) TestSaveUser_Error() {
 
 	assert.NotNil(s.T(), err)
 }
+
+func (s *userServiceSuite) TestDeleteUserByID() {
+	userService := s.userService
+
+	gormMock := new(mocks.GormMock)
+	gormMock.On(
+		"DeleteByID",
+		mock.Anything,
+		mock.Anything,
+	).Return(mocks.GetDefaultDBResponse())
+
+	userService.broker = gormMock
+
+	err := userService.DeleteUserByID(s.testUserID)
+
+	gormMock.AssertNumberOfCalls(s.T(), "DeleteByID", 1)
+	gormMock.AssertCalled(
+		s.T(),
+		"DeleteByID",
+		mock.Anything,
+		s.testUserID,
+	)
+
+	assert.Nil(s.T(), err)
+}
+
+func (s *userServiceSuite) TestDeleteUserByID_Error() {
+	userService := s.userService
+
+	gormMock := new(mocks.GormMock)
+	gormMock.On(
+		"DeleteByID",
+		mock.Anything,
+		mock.Anything,
+	).Return(mocks.GetErrorDBResponse(errors.New("GormError")))
+
+	userService.broker = gormMock
+
+	err := userService.DeleteUserByID(s.testUserID)
+
+	gormMock.AssertNumberOfCalls(s.T(), "DeleteByID", 1)
+	gormMock.AssertCalled(
+		s.T(),
+		"DeleteByID",
+		mock.Anything,
+		s.testUserID,
+	)
+
+	assert.NotNil(s.T(), err)
+}

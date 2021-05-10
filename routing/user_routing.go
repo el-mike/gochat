@@ -37,4 +37,13 @@ func DefineUserRoutes(router *gin.RouterGroup) {
 			},
 		},
 	))
+	router.DELETE("/:id", handlerCreator.CreateAuthenticated(
+		userController.DeleteUser,
+		[]*control.AccessRule{
+			{
+				ResourceID: models.USER_RESOURCE,
+				Action:     rbac.DeleteAny,
+			},
+		},
+	))
 }

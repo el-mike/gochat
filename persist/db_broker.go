@@ -16,6 +16,9 @@ type DBBroker interface {
 
 	// Save - update value in the DB or create if it does not exist.
 	Save(value interface{}) *DBResponse
+
+	// DeleteByID - deletes a record of given type by passed ID.
+	DeleteByID(target interface{}, id interface{}) *DBResponse
 }
 
 // DBResponse - basic, unified database response.

@@ -9,6 +9,7 @@ import (
 	"github.com/el-Mike/gochat/schema"
 	"github.com/el-Mike/gochat/services"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // UserController - struct for handling Users related requests.
@@ -87,4 +88,27 @@ func (uc *UserController) SaveUser(ctx *gin.Context, contextUser *control.Contex
 	}
 
 	return user, nil
+}
+
+// DeleteUser - deletes a User with given ID.
+func (uc *UserController) DeleteUser(ctx *gin.Context, contextUser *control.ContextUser) (interface{}, *api.APIError) {
+	paramId := ctx.Param("id")
+
+	targetId, err := uuid.Parse(paramId)
+
+	if targetId == uuid.Nil || err != nil {
+		return nil, api.NewBadRequestError(errors.New("User ID is missing or malformed."))
+	}
+
+	userId := contextUser.ID
+
+	if targetId == userId {
+		return nil, api.NewBadRequestError(errors.New("You cannot delete yourself."))
+	}
+
+	if err := uc.userService.DeleteUserByID(targetId); err != nil {
+		return nil, api.NewInternalError(err)
+	}
+
+	return nil, nil
 }
