@@ -58,3 +58,8 @@ func (us *UserService) GetUsers() ([]*models.UserModel, error) {
 func (us *UserService) SaveUser(user *models.UserModel) error {
 	return us.broker.Save(user).Err()
 }
+
+// DeleteUserByID - deletes a User with given ID.
+func (us *UserService) DeleteUserByID(id uuid.UUID) error {
+	return us.broker.DeleteByID(models.UserModel{}, id).Err()
+}

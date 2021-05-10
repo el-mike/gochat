@@ -52,6 +52,12 @@ func (gm *gormWrapper) Save(value interface{}) *DBResponse {
 	return dbResponseFromGormResult(res)
 }
 
+func (gm *gormWrapper) DeleteByID(target interface{}, id interface{}) *DBResponse {
+	res := gm.db.Delete(target, id)
+
+	return dbResponseFromGormResult(res)
+}
+
 func dbResponseFromGormResult(result *gorm.DB) *DBResponse {
 	res := NewDBResponse()
 
