@@ -3,8 +3,8 @@ package routing
 import (
 	"github.com/el-Mike/gochat/controllers"
 	"github.com/el-Mike/gochat/core/control"
-	"github.com/el-Mike/gochat/core/control/rbac"
 	"github.com/el-Mike/gochat/models"
+	"github.com/el-Mike/restrict"
 	"github.com/gin-gonic/gin"
 )
 
@@ -24,7 +24,7 @@ func DefineUserRoutes(router *gin.RouterGroup) {
 		[]*control.AccessRule{
 			{
 				ResourceID: models.USER_RESOURCE,
-				Action:     rbac.ReadAny,
+				Action:     restrict.ReadAny,
 			},
 		},
 	))
@@ -33,7 +33,7 @@ func DefineUserRoutes(router *gin.RouterGroup) {
 		[]*control.AccessRule{
 			{
 				ResourceID: models.USER_RESOURCE,
-				Action:     rbac.Create,
+				Action:     restrict.Create,
 			},
 		},
 	))
@@ -42,7 +42,7 @@ func DefineUserRoutes(router *gin.RouterGroup) {
 		[]*control.AccessRule{
 			{
 				ResourceID: models.USER_RESOURCE,
-				Action:     rbac.DeleteAny,
+				Action:     restrict.DeleteAny,
 			},
 		},
 	))

@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/el-Mike/gochat/core/control"
-	"github.com/el-Mike/gochat/core/control/rbac"
 	"github.com/el-Mike/gochat/routing"
+	"github.com/el-Mike/restrict"
 
 	"github.com/el-Mike/gochat/persist"
 
@@ -50,7 +50,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, err = rbac.InitAccessManager(control.Policy)
+	_, err = restrict.InitAccessManager(control.Policy)
 
 	if err != nil {
 		log.Fatal("RBAC initialization failed")
