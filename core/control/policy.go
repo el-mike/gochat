@@ -1,8 +1,8 @@
 package control
 
 import (
-	"github.com/el-Mike/gochat/core/control/rbac"
 	"github.com/el-Mike/gochat/models"
+	"github.com/el-Mike/restrict"
 )
 
 const (
@@ -11,49 +11,49 @@ const (
 	UserRole       string = "USER"
 )
 
-var userRole *rbac.Role = &rbac.Role{
+var userRole *restrict.Role = &restrict.Role{
 	ID:          UserRole,
 	Description: "User is a standard user of the application.",
-	Grants: map[string][]rbac.Action{
-		models.MESSAGE_RESOURCE:      {rbac.Create, rbac.ReadAny, rbac.UpdateOwn, rbac.DeleteOwn},
-		models.CONVERSATION_RESOURCE: {rbac.Create, rbac.ReadAny, rbac.DeleteOwn},
+	Grants: map[string][]restrict.Action{
+		models.MESSAGE_RESOURCE:      {restrict.Create, restrict.ReadAny, restrict.UpdateOwn, restrict.DeleteOwn},
+		models.CONVERSATION_RESOURCE: {restrict.Create, restrict.ReadAny, restrict.DeleteOwn},
 	},
 }
 
-var adminRole *rbac.Role = &rbac.Role{
+var adminRole *restrict.Role = &restrict.Role{
 	ID:          AdminRole,
 	Description: "Admin can manage standard users.",
-	Grants: map[string][]rbac.Action{
-		models.USER_RESOURCE: {rbac.Create, rbac.ReadAny, rbac.UpdateAny, rbac.DeleteAny},
+	Grants: map[string][]restrict.Action{
+		models.USER_RESOURCE: {restrict.Create, restrict.ReadAny, restrict.UpdateAny, restrict.DeleteAny},
 	},
 	Parents: []string{UserRole},
 }
 
-var superAdminRole *rbac.Role = &rbac.Role{
+var superAdminRole *restrict.Role = &restrict.Role{
 	ID:          SuperAdminRole,
 	Description: "SuperAdmin can manage all entities in the system.",
-	Grants:      map[string][]rbac.Action{},
+	Grants:      map[string][]restrict.Action{},
 	Parents:     []string{AdminRole},
 }
 
 // Policy - describes Gochat's RBAC policy definition.
-var Policy *rbac.PolicyDefinition = &rbac.PolicyDefinition{
+var Policy *restrict.PolicyDefinition = &restrict.PolicyDefinition{
 	Resources: []string{
 		models.USER_RESOURCE,
 		models.CONVERSATION_RESOURCE,
 		models.MESSAGE_RESOURCE,
 	},
-	Actions: []rbac.Action{
-		rbac.Noop,
-		rbac.Create,
-		rbac.ReadAny,
-		rbac.ReadOwn,
-		rbac.UpdateAny,
-		rbac.UpdateOwn,
-		rbac.DeleteAny,
-		rbac.DeleteOwn,
+	Actions: []restrict.Action{
+		restrict.Noop,
+		restrict.Create,
+		restrict.ReadAny,
+		restrict.ReadOwn,
+		restrict.UpdateAny,
+		restrict.UpdateOwn,
+		restrict.DeleteAny,
+		restrict.DeleteOwn,
 	},
-	Roles: map[string]*rbac.Role{
+	Roles: map[string]*restrict.Role{
 		UserRole:       userRole,
 		AdminRole:      adminRole,
 		SuperAdminRole: superAdminRole,

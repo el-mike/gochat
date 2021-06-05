@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/el-Mike/gochat/core/api"
-	"github.com/el-Mike/gochat/core/control/rbac"
+	"github.com/el-Mike/restrict"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,14 +25,14 @@ type AuthenticatedControllerFn func(
 // controller's return values.
 type HandlerCreator struct {
 	authGuard     *AuthGuard
-	accessManager *rbac.AccessManager
+	accessManager *restrict.AccessManager
 }
 
 // NewHandlerCreator - returns HandlerCreator instance.
 func NewHandlerCreator() *HandlerCreator {
 	return &HandlerCreator{
 		authGuard:     NewAuthGuard(),
-		accessManager: rbac.AM,
+		accessManager: restrict.AM,
 	}
 }
 
