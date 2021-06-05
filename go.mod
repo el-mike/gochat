@@ -2,8 +2,6 @@ module github.com/el-Mike/gochat
 
 go 1.14
 
-replace github.com/el-Mike/restrict => ../restrict
-
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/el-Mike/restrict v0.0.0-20210605155210-540e0e038b85
