@@ -162,7 +162,7 @@ func (s *authManagerSuite) TestLogin() {
 	assert.Nil(s.T(), err)
 }
 
-func (s *authManagerSuite) TestLoginWithErrors() {
+func (s *authManagerSuite) TestLogin_Errors() {
 	authManager := s.authManager
 
 	jwtMock := new(jwtManagerMock)
@@ -261,7 +261,7 @@ func (s *authManagerSuite) TestVerifyToken() {
 	jwtMock.AssertNumberOfCalls(s.T(), "ParseToken", 1)
 }
 
-func (s *authManagerSuite) TestVerifyTokenWithMissingToken() {
+func (s *authManagerSuite) TestVerifyToken_MissingToken() {
 	authManager := s.authManager
 
 	jwtMock := new(jwtManagerMock)
@@ -308,7 +308,7 @@ func (s *authManagerSuite) TestHashAndSalt() {
 
 }
 
-func (s *authManagerSuite) TestHashAndSaltWithError() {
+func (s *authManagerSuite) TestHashAndSalt_Error() {
 	authManager := s.authManager
 
 	cryptoMock := new(cryptoMock)
@@ -349,7 +349,7 @@ func (s *authManagerSuite) TestComparePasswords() {
 	cryptoMock.AssertCalled(s.T(), "CompareHashAndPassword", []byte(s.testPassword), []byte(s.testPassword))
 }
 
-func (s *authManagerSuite) TestComparePasswordWithError() {
+func (s *authManagerSuite) TestComparePasswords_Error() {
 	authManager := s.authManager
 
 	cryptoMock := new(cryptoMock)

@@ -105,7 +105,7 @@ func (s *jwtManagerSuite) TestCreateTokenValid() {
 	tokenMock.AssertNumberOfCalls(s.T(), "CreateToken", 1)
 }
 
-func (s *jwtManagerSuite) TestCreateTokenMissingArgs() {
+func (s *jwtManagerSuite) TestCreateToken_MissingArgs() {
 	jwtManager := s.jwtManager
 
 	tokenMock := new(tokenProviderMock)
@@ -151,7 +151,7 @@ func (s *jwtManagerSuite) TestParseToken() {
 	tokenMock.AssertCalled(s.T(), "ParseToken", s.testTokenString, mock.Anything)
 }
 
-func (s *jwtManagerSuite) TestParseTokenWithErrors() {
+func (s *jwtManagerSuite) TestParseToken_Errors() {
 	jwtManager := s.jwtManager
 
 	tokenMock := new(tokenProviderMock)
@@ -171,7 +171,7 @@ func (s *jwtManagerSuite) TestParseTokenWithErrors() {
 	tokenMock.AssertNumberOfCalls(s.T(), "ParseToken", 1)
 }
 
-func (s *jwtManagerSuite) TestParseTokenWithFailingValidation() {
+func (s *jwtManagerSuite) TestParseToken_FailingValidation() {
 	jwtManager := s.jwtManager
 
 	testToken := jwt.NewWithClaims(jwt.SigningMethodNone, jwt.MapClaims{})
