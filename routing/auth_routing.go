@@ -8,7 +8,11 @@ import (
 
 // DefineAuthRoutes - registers auth routes.
 func DefineAuthRoutes(router *gin.RouterGroup) {
-	handlerCreator := control.NewHandlerCreator()
+	handlerCreator, err := control.NewHandlerCreator()
+	if err != nil {
+		panic(err)
+	}
+
 	authController := controllers.NewAuthController()
 
 	// Unauthenticated routes

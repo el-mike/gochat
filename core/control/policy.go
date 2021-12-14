@@ -6,25 +6,55 @@ import (
 )
 
 const (
-	SuperAdminRole string = "SUPER_ADMIN"
-	AdminRole      string = "ADMIN"
-	UserRole       string = "USER"
+	SuperAdminRole = "SUPER_ADMIN"
+	AdminRole      = "ADMIN"
+	UserRole       = "USER"
 )
 
-var userRole *restrict.Role = &restrict.Role{
+const (
+	CreateAction = "create"
+
+	ReadAction = "read"
+
+	UpdateAction    = "update"
+	UpdateOwnAction = "updateOwn"
+
+	DeleteAction    = "delete"
+	DeleteOwnAction = "deleteOwn"
+)
+
+const (
+	AccessOwnPreset = "accessOwn"
+)
+
+var userRole = &restrict.Role{
 	ID:          UserRole,
 	Description: "User is a standard user of the application.",
-	Grants: map[string][]restrict.Action{
-		models.MESSAGE_RESOURCE:      {restrict.Create, restrict.ReadAny, restrict.UpdateOwn, restrict.DeleteOwn},
-		models.CONVERSATION_RESOURCE: {restrict.Create, restrict.ReadAny, restrict.DeleteOwn},
+	Grants: restrict.GrantsMap{
+		models.MESSAGE_RESOURCE: {
+			&restrict.Permission{Action: CreateAction},
+			&restrict.Permission{Action: ReadAction, Preset: AccessOwnPreset},
+			&restrict.Permission{Action: UpdateOwnAction, Preset: AccessOwnPreset},
+			&restrict.Permission{Action: DeleteOwnAction, Preset: AccessOwnPreset},
+		},
+		models.CONVERSATION_RESOURCE: {
+			&restrict.Permission{Action: CreateAction},
+			&restrict.Permission{Action: ReadAction},
+			&restrict.Permission{Action: DeleteAction, Preset: AccessOwnPreset},
+		},
 	},
 }
 
 var adminRole *restrict.Role = &restrict.Role{
 	ID:          AdminRole,
 	Description: "Admin can manage standard users.",
-	Grants: map[string][]restrict.Action{
-		models.USER_RESOURCE: {restrict.Create, restrict.ReadAny, restrict.UpdateAny, restrict.DeleteAny},
+	Grants: restrict.GrantsMap{
+		models.USER_RESOURCE: {
+			&restrict.Permission{Action: CreateAction},
+			&restrict.Permission{Action: ReadAction, Preset: AccessOwnPreset},
+			&restrict.Permission{Action: UpdateAction},
+			&restrict.Permission{Action: DeleteAction},
+		},
 	},
 	Parents: []string{UserRole},
 }
@@ -32,28 +62,30 @@ var adminRole *restrict.Role = &restrict.Role{
 var superAdminRole *restrict.Role = &restrict.Role{
 	ID:          SuperAdminRole,
 	Description: "SuperAdmin can manage all entities in the system.",
-	Grants:      map[string][]restrict.Action{},
+	Grants:      restrict.GrantsMap{},
 	Parents:     []string{AdminRole},
 }
 
 // Policy - describes Gochat's RBAC policy definition.
 var Policy *restrict.PolicyDefinition = &restrict.PolicyDefinition{
-	Resources: []string{
-		models.USER_RESOURCE,
-		models.CONVERSATION_RESOURCE,
-		models.MESSAGE_RESOURCE,
+	PermissionPresets: restrict.PermissionPresets{
+		AccessOwnPreset: &restrict.Permission{
+			Conditions: restrict.Conditions{
+				&restrict.EqualCondition{
+					ID: "isOwner",
+					Left: &restrict.ValueDescriptor{
+						Source: restrict.ResourceField,
+						Field:  "CreatedBy",
+					},
+					Right: &restrict.ValueDescriptor{
+						Source: restrict.SubjectField,
+						Field:  "ID",
+					},
+				},
+			},
+		},
 	},
-	Actions: []restrict.Action{
-		restrict.Noop,
-		restrict.Create,
-		restrict.ReadAny,
-		restrict.ReadOwn,
-		restrict.UpdateAny,
-		restrict.UpdateOwn,
-		restrict.DeleteAny,
-		restrict.DeleteOwn,
-	},
-	Roles: map[string]*restrict.Role{
+	Roles: restrict.Roles{
 		UserRole:       userRole,
 		AdminRole:      adminRole,
 		SuperAdminRole: superAdminRole,
