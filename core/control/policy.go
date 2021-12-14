@@ -51,7 +51,7 @@ var adminRole *restrict.Role = &restrict.Role{
 	Grants: restrict.GrantsMap{
 		models.USER_RESOURCE: {
 			&restrict.Permission{Action: CreateAction},
-			&restrict.Permission{Action: ReadAction, Preset: AccessOwnPreset},
+			&restrict.Permission{Action: ReadAction},
 			&restrict.Permission{Action: UpdateAction},
 			&restrict.Permission{Action: DeleteAction},
 		},

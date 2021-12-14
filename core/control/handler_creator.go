@@ -93,14 +93,12 @@ func (hc *HandlerCreator) CreateAuthenticated(
 				Actions:  []string{rule.Action},
 			})
 
-			if err != nil {
-				if _, ok := err.(*restrict.AccessDeniedError); ok {
-					ctx.JSON(api.ResponseFromError(api.NewAccessDeniedError(rule.ResourceID, string(rule.Action))))
-					return
-				} else {
-					ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
-					return
-				}
+			if _, ok := err.(*restrict.AccessDeniedError); err != nil && ok {
+				ctx.JSON(api.ResponseFromError(api.NewAccessDeniedError(rule.ResourceID, string(rule.Action))))
+				return
+			} else {
+				ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
+				return
 			}
 		}
 
