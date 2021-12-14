@@ -14,3 +14,8 @@ type ContextUser struct {
 	Email    string    `json:"email"`
 	Role     string    `json:"role"`
 }
+
+// GetRole - restrict's Subject implementation.
+func (cu *ContextUser) GetRole() string {
+	return cu.Role
+}

@@ -2,11 +2,9 @@ module github.com/el-Mike/gochat
 
 go 1.14
 
-// replace github.com/el-Mike/restrict => ../restrict
-
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/el-Mike/restrict v0.0.0-20210605155210-540e0e038b85
+	github.com/el-Mike/restrict v0.2.1
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/go-redis/redis/v8 v8.4.8

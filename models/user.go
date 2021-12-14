@@ -14,6 +14,6 @@ type UserModel struct {
 }
 
 // ResourceName - returns the name of User resource.
-func (um *UserModel) ResourceName() string {
+func (um *UserModel) GetResourceName() string {
 	return USER_RESOURCE
 }

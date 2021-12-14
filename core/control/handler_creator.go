@@ -6,6 +6,7 @@ import (
 
 	"github.com/el-Mike/gochat/core/api"
 	"github.com/el-Mike/restrict"
+	"github.com/el-Mike/restrict/adapters"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,11 +30,16 @@ type HandlerCreator struct {
 }
 
 // NewHandlerCreator - returns HandlerCreator instance.
-func NewHandlerCreator() *HandlerCreator {
+func NewHandlerCreator() (*HandlerCreator, error) {
+	policyManager, err := restrict.NewPolicyManager(adapters.NewInMemoryAdapter(Policy), true)
+	if err != nil {
+		return nil, err
+	}
+
 	return &HandlerCreator{
 		authGuard:     NewAuthGuard(),
-		accessManager: restrict.AM,
-	}
+		accessManager: restrict.NewAccessManager(policyManager),
+	}, nil
 }
 
 // CreateUnauthenticated - creates unauthenticated route.
@@ -73,16 +79,28 @@ func (hc *HandlerCreator) CreateAuthenticated(
 				continue
 			}
 
-			canAccess, err := hc.accessManager.IsGranted(contextUser.Role, rule.ResourceID, rule.Action)
+			var resource restrict.Resource
 
-			if err != nil {
-				ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
-				return
+			if rule.ResourceProvider != nil {
+				resource = rule.ResourceProvider(ctx, contextUser)
+			} else {
+				resource = restrict.UseResource(rule.ResourceID)
 			}
 
-			if !canAccess {
-				ctx.JSON(api.ResponseFromError(api.NewAccessDeniedError(rule.ResourceID, string(rule.Action))))
-				return
+			err := hc.accessManager.Authorize(&restrict.AccessRequest{
+				Subject:  contextUser,
+				Resource: resource,
+				Actions:  []string{rule.Action},
+			})
+
+			if err != nil {
+				if _, ok := err.(*restrict.AccessDeniedError); ok {
+					ctx.JSON(api.ResponseFromError(api.NewAccessDeniedError(rule.ResourceID, string(rule.Action))))
+					return
+				} else {
+					ctx.JSON(api.ResponseFromError(api.NewInternalError(err)))
+					return
+				}
 			}
 		}
 

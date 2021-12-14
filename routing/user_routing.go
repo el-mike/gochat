@@ -4,13 +4,16 @@ import (
 	"github.com/el-Mike/gochat/controllers"
 	"github.com/el-Mike/gochat/core/control"
 	"github.com/el-Mike/gochat/models"
-	"github.com/el-Mike/restrict"
 	"github.com/gin-gonic/gin"
 )
 
 // DefineUserRoutes - registers user routes.
 func DefineUserRoutes(router *gin.RouterGroup) {
-	handlerCreator := control.NewHandlerCreator()
+	handlerCreator, err := control.NewHandlerCreator()
+	if err != nil {
+		panic(err)
+	}
+
 	userController := controllers.NewUserController()
 
 	// Authenticated routes
@@ -24,7 +27,7 @@ func DefineUserRoutes(router *gin.RouterGroup) {
 		[]*control.AccessRule{
 			{
 				ResourceID: models.USER_RESOURCE,
-				Action:     restrict.ReadAny,
+				Action:     control.ReadAction,
 			},
 		},
 	))
@@ -33,7 +36,7 @@ func DefineUserRoutes(router *gin.RouterGroup) {
 		[]*control.AccessRule{
 			{
 				ResourceID: models.USER_RESOURCE,
-				Action:     restrict.Create,
+				Action:     control.CreateAction,
 			},
 		},
 	))
@@ -42,7 +45,7 @@ func DefineUserRoutes(router *gin.RouterGroup) {
 		[]*control.AccessRule{
 			{
 				ResourceID: models.USER_RESOURCE,
-				Action:     restrict.DeleteAny,
+				Action:     control.DeleteAction,
 			},
 		},
 	))
